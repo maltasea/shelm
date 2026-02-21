@@ -154,12 +154,6 @@ and of_stmt ?meta = function
       mk ?meta "params" (List.map (sym ?meta) params);
       do_block ?meta (List.map (of_stmt ?meta) body);
     ]
-  | RecFnDef (name, params, body) ->
-    mk ?meta "defn-rec" [
-      sym ?meta name;
-      mk ?meta "params" (List.map (sym ?meta) params);
-      do_block ?meta (List.map (of_stmt ?meta) body);
-    ]
   | Break -> mk ?meta "break" []
   | Continue -> mk ?meta "continue" []
   | Return e -> mk ?meta "return" [of_expr ?meta e]
@@ -362,11 +356,6 @@ and stmt_of_node (n : node) : (Ast.stmt, decode_error) result =
     let* ps = map_results (sym_name "stmt:defn-param") params in
     let* b = map_results stmt_of_node body_nodes in
     Ok (FnDef (n', ps, b))
-  | Node ("defn-rec", _, [name; Node ("params", _, params); Node ("do", _, body_nodes)]) ->
-    let* n' = sym_name "stmt:defn-rec-name" name in
-    let* ps = map_results (sym_name "stmt:defn-rec-param") params in
-    let* b = map_results stmt_of_node body_nodes in
-    Ok (RecFnDef (n', ps, b))
   | Node ("break", _, []) -> Ok Break
   | Node ("continue", _, []) -> Ok Continue
   | Node ("return", _, [e]) ->

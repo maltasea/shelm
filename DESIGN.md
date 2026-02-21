@@ -35,7 +35,7 @@ And use that bytecode for:
 
 - Explicit imperative semantics.
 - Fixed-arity function calls.
-- Explicit recursion marker via `rec` keyword (planned).
+- No dedicated `rec` keyword; recursion is written with `defun` and self-call.
 - Readable syntax over clever shorthand.
 
 ## Runtime Bias

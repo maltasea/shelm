@@ -86,9 +86,9 @@
 
   - if cond then ... end
   - while cond do ... end
-  - for x in xs do ... end
+  - foreach x in xs do ... end
   - match x with | ... -> ... end
-  - fn name ... do ... end
+  - defun name ... do ... end
 
   4. Brace and colon block forms are rejected at reader level.
   5. Symbols allow - and ?.
@@ -103,7 +103,7 @@
 
   2. Remove fragile generic ... do -> { rewrite:
 
-  - only rewrite do in valid statement contexts (if/while/for/fn/else).
+  - only rewrite do in valid statement contexts (if/while/foreach/defun/fun/else).
 
   3. Preserve/restore accurate source positions:
 
@@ -140,7 +140,7 @@
 
   1. Arithmetic + precedence
   2. Conditionals (if/else if/else)
-  3. Loops (while, for in)
+  3. Loops (while, foreach in)
   4. First-order functions + returns
   5. Collections (array/hash operations currently supported)
   6. String utilities
@@ -201,7 +201,7 @@ Use:
 ```bash
 scripts/compare-perl-vs-shelm.sh \
   --perl examples/bench_sum.pl \
-  --shelm examples/bench_sum.by \
+  --shelm examples/bench_sum.shlm \
   --iterations 50
 ```
 
@@ -210,7 +210,7 @@ With host file:
 ```bash
 scripts/compare-perl-vs-shelm.sh \
   --perl path/to/reference.pl \
-  --shelm path/to/equivalent.by \
+  --shelm path/to/equivalent.shlm \
   --host runtime/perl_host_default.pl \
   --iterations 50
 ```
@@ -218,7 +218,7 @@ scripts/compare-perl-vs-shelm.sh \
 CLI wrapper:
 
 ```bash
-shelm path/to/equivalent.by \
+shelm path/to/equivalent.shlm \
   --benchmark path/to/reference.pl \
   --iterations 50 \
   --host runtime/perl_host_default.pl

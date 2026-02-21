@@ -42,7 +42,6 @@ and stmt =
   | Break
   | Continue
   | FnDef of string * string list * stmt list
-  | RecFnDef of string * string list * stmt list
   | Return of expr
   | ExprStmt of expr
 

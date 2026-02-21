@@ -6,12 +6,13 @@
   let keywords = Hashtbl.create 16
   let () = List.iter (fun (k, v) -> Hashtbl.add keywords k v) [
     "let", LET;
-    "fn", FN;
+    "def", DEF;
+    "defun", DEFUN;
+    "fun", FUN;
     "if", IF;
     "else", ELSE;
     "while", WHILE;
-    "for", FOR;
-    "rec", REC;
+    "foreach", FOREACH;
     "in", IN;
     "return", RETURN;
     "match", MATCH;
@@ -82,6 +83,9 @@ rule token = parse
   | ','                { set_expr_end false COMMA }
   | ':'                { set_expr_end false COLON }
   | '_'                { set_expr_end true UNDERSCORE }
+  | alpha ident_char* ':' { let s = Lexing.lexeme lexbuf in
+                            let n = String.length s in
+                            set_expr_end true (KEYWORD (String.sub s 0 (n - 1))) }
   | alpha ident_char*  { let s = Lexing.lexeme lexbuf in
                          match Hashtbl.find_opt keywords s with
                          | Some tok -> set_expr_end (match tok with TRUE | FALSE | NIL -> true | _ -> false) tok

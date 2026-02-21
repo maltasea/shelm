@@ -6,10 +6,11 @@
 %token <float> FLOAT
 %token <string> STRING
 %token <string> IDENT
+%token <string> KEYWORD
 %token <string * string> REGEX
 %token <string * string * string> REGEX_REPLACE
 
-%token LET FN IF ELSE WHILE FOR REC IN RETURN MATCH CASE TYPE ENUM BREAK CONTINUE
+%token LET DEF DEFUN FUN IF ELSE WHILE FOREACH IN RETURN MATCH CASE TYPE ENUM BREAK CONTINUE
 %token TRUE FALSE NIL NOT
 %token AND OR
 %token PLUS MINUS STAR SLASH PERCENT
@@ -60,6 +61,7 @@ stmt:
   | TYPE name = IDENT EQUALS repr = expr            { TypeDef (name, repr) }
   | ENUM name = IDENT vars = enum_block             { EnumDef (name, vars) }
   | LET name = IDENT EQUALS e = expr            { Let (name, e) }
+  | DEF name = IDENT EQUALS e = expr            { Let (name, e) }
   | name = IDENT EQUALS e = expr                 { Assign (name, e) }
   | target = postfix_expr LBRACKET idx = expr RBRACKET EQUALS e = expr
     { IndexAssign (target, idx, e) }
@@ -71,21 +73,15 @@ stmt:
   | IF cond = expr body = block ELSE els = block { If (cond, body, els) }
   | IF cond = expr body = block ELSE elif = else_if { If (cond, body, [elif]) }
   | WHILE cond = expr body = block               { While (cond, body) }
-  | FOR name = IDENT IN e = expr body = block    { For (name, e, body) }
+  | FOREACH name = IDENT IN e = expr body = block    { For (name, e, body) }
   | BREAK                                         { Break }
   | CONTINUE                                      { Continue }
-  | FN name = IDENT body = block
+  | DEFUN name = IDENT body = block
     { FnDef (name, [], body) }
-  | FN name = IDENT params = bare_param_list body = block
+  | DEFUN name = IDENT params = bare_param_list body = block
     { FnDef (name, params, body) }
-  | FN name = IDENT LPAREN params = param_list RPAREN body = block
+  | DEFUN name = IDENT LPAREN params = param_list RPAREN body = block
     { FnDef (name, params, body) }
-  | REC FN name = IDENT body = block
-    { RecFnDef (name, [], body) }
-  | REC FN name = IDENT params = bare_param_list body = block
-    { RecFnDef (name, params, body) }
-  | REC FN name = IDENT LPAREN params = param_list RPAREN body = block
-    { RecFnDef (name, params, body) }
   | RETURN e = expr                              { Return e }
   | e = expr                                     { ExprStmt e }
   ;
@@ -227,10 +223,16 @@ primary_expr:
   | i = INT                              { IntLit i }
   | f = FLOAT                            { FloatLit f }
   | s = STRING                           { StringLit s }
+  | k = KEYWORD                          { StringLit k }
   | TRUE                                 { BoolLit true }
   | FALSE                                { BoolLit false }
   | NIL                                  { Nil }
   | name = IDENT                         { Var name }
+  | FUN body = block                     { Lambda ([], body) }
+  | FUN params = bare_param_list body = block
+    { Lambda (params, body) }
+  | FUN LPAREN params = param_list RPAREN body = block
+    { Lambda (params, body) }
   | LPAREN e = expr RPAREN               { e }
   | LBRACKET elems = array_elems RBRACKET { ArrayLit elems }
   | LBRACE pairs = hash_pairs RBRACE     { HashLit pairs }
@@ -245,6 +247,8 @@ array_elems:
 
 hash_pairs:
   | /* empty */                                          { [] }
+  | k = KEYWORD v = expr                                 { [(StringLit k, v)] }
+  | k = KEYWORD v = expr COMMA rest = hash_pairs         { (StringLit k, v) :: rest }
   | k = expr COLON v = expr                              { [(k, v)] }
   | k = expr COLON v = expr COMMA rest = hash_pairs      { (k, v) :: rest }
   ;

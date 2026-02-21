@@ -13,11 +13,11 @@ Shelm is a small language that compiles to multiple targets:
 - `go`
 - `bytecode`
 
-Source files use the `.by` extension.
+Source files use the `.shlm` extension.
 
 ## 2) First Program
 
-Create `hello.by`:
+Create `hello.shlm`:
 
 ```shelm
 let name = "World"
@@ -27,7 +27,7 @@ println("Hello, " ++ name ++ "!")
 Compile to Perl:
 
 ```bash
-opam exec -- ./_build/default/bin/shelm.exe hello.by --target perl > hello.pl
+opam exec -- ./_build/default/bin/shelm.exe hello.shlm --target perl > hello.pl
 perl hello.pl
 ```
 
@@ -54,11 +54,12 @@ opam exec -- dune runtest
 - Blocks prefer `keyword ... end`:
   - `if cond then ... else ... end`
   - `while cond do ... end`
-  - `for item in items do ... end`
+  - `foreach item in items do ... end`
 - Functions:
-  - `fn add x, y do return x + y end`
-  - `rec fn fact n do ... end`
-- Closures/lambdas are intentionally not in the surface syntax (speed-first profile).
+  - `defun add x, y do return x + y end`
+  - `defun fact n do ... end`
+- Function values:
+  - `let double = fun(x) do return x * 2 end`
 - Arrays: `[1, 2, 3]`
 - Hashes: `{"a": 1, "b": 2}`
 - Regex:
@@ -80,15 +81,15 @@ In generated Perl, host hooks are loaded with:
 Compile sample files:
 
 ```bash
-opam exec -- ./_build/default/bin/shelm.exe examples/hello.by --target perl
-opam exec -- ./_build/default/bin/shelm.exe examples/arrays.by --target go
-opam exec -- ./_build/default/bin/shelm.exe examples/hashes.by --target bytecode
+opam exec -- ./_build/default/bin/shelm.exe examples/hello.shlm --target perl
+opam exec -- ./_build/default/bin/shelm.exe examples/arrays.shlm --target go
+opam exec -- ./_build/default/bin/shelm.exe examples/hashes.shlm --target bytecode
 ```
 
 Run benchmark mode:
 
 ```bash
-opam exec -- ./_build/default/bin/shelm.exe benchmarks/prime_count.by \
+opam exec -- ./_build/default/bin/shelm.exe benchmarks/prime_count.shlm \
   --benchmark benchmarks/prime_count.pl \
   --iterations 10
 ```
@@ -103,4 +104,4 @@ Run full conformance checks:
 
 - `LANG_SPEC.md` (normative language spec)
 - `CONFORMANCE_REPORT.md` (latest conformance status)
-- `examples/*.by` (small working programs)
+- `examples/*.shlm` (small working programs)

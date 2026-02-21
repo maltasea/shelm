@@ -1,8 +1,8 @@
 let () =
   let usage =
     "shelm - a proglang for lanzy people\n\
-     Usage: shelm <file.by> --target perl|ocaml|go|bytecode\n\
-     Benchmark: shelm <file.by> --benchmark <reference.pl> [--iterations N] [--host <host.pl>]"
+     Usage: shelm <file.shlm> --target perl|ocaml|go|bytecode\n\
+     Benchmark: shelm <file.shlm> --benchmark <reference.pl> [--iterations N] [--host <host.pl>]"
   in
   let target = ref "" in
   let benchmark_ref = ref "" in
@@ -20,8 +20,8 @@ let () =
     Printf.eprintf "%s\n" usage;
     exit 1
   );
-  if Filename.extension !filename <> ".by" then (
-    Printf.eprintf "Error: Shelm source file must use .by extension (got: %s)\n" !filename;
+  if Filename.extension !filename <> ".shlm" then (
+    Printf.eprintf "Error: Shelm source file must use .shlm extension (got: %s)\n" !filename;
     exit 1
   );
   if !benchmark_ref <> "" then (

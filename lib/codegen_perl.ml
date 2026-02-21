@@ -425,12 +425,6 @@ and gen_stmt = function
     emitln (Printf.sprintf "sub %s { %s;" name param_decls);
     indent (fun () -> List.iter gen_stmt body);
     emitln "}"
-  | RecFnDef (name, params, body) ->
-    Hashtbl.replace declared name true;
-    let param_decls = String.concat "; " (List.map (fun p -> "my $" ^ p ^ " = shift") params) in
-    emitln (Printf.sprintf "sub %s { %s;" name param_decls);
-    indent (fun () -> List.iter gen_stmt body);
-    emitln "}"
   | Return e ->
     emitln (Printf.sprintf "return %s;" (gen_expr e))
   | ExprStmt (RegexReplace (Var name, pat, repl, flags)) ->

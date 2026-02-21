@@ -478,18 +478,6 @@ and gen_stmt = function
       decr function_depth
     );
     emitln "})"
-  | RecFnDef (name, params, body) ->
-    emitln (Printf.sprintf "var %s Value" name);
-    emitln (Printf.sprintf "%s = ShelmFunc(func(_args []Value) Value {" name);
-    indent (fun () ->
-      incr function_depth;
-      List.iteri (fun i p ->
-        emitln (Printf.sprintf "var %s Value = argAt(_args, %d)" p i)
-      ) params;
-      gen_stmts_returning body;
-      decr function_depth
-    );
-    emitln "})"
   | Return e ->
     if !function_depth > 0 then
       emitln (Printf.sprintf "return %s" (gen_expr e))

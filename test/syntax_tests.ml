@@ -34,13 +34,13 @@ let assert_parse_error_contains label source needle =
     if not (contains_substring msg needle) then
       failwith (Printf.sprintf "%s: expected error containing %S, got: %s" label needle msg)
 
-let test_optional_paren_fn_defs () =
+let test_defun_defs_compile () =
   let source =
     {|
-fn add x, y do
+defun add x, y do
   return x + y
 end
-rec fn fact n do
+defun fact n do
   if n <= 1 then
     return 1
   end
@@ -51,10 +51,10 @@ println(string_of(fact(6)))
 |}
   in
   let code = compile_perl source in
-  assert_contains "fn-add" code "sub add { my $x = shift; my $y = shift;";
-  assert_contains "fn-fact" code "sub fact { my $n = shift;";
-  assert_contains "fn-call" code "add(2, 3)";
-  assert_contains "rec-call" code "fact(6)"
+  assert_contains "defun-add" code "sub add { my $x = shift; my $y = shift;";
+  assert_contains "defun-fact" code "sub fact { my $n = shift;";
+  assert_contains "defun-call" code "add(2, 3)";
+  assert_contains "defun-recursive-call" code "fact(6)"
 
 let test_index_not_rewritten_as_call () =
   let source =
@@ -69,6 +69,33 @@ delete(colors["banana"])
   let code = compile_perl source in
   assert_contains "exists-index" code "if (exists($colors{\"banana\"})) {";
   assert_contains "delete-index" code "delete($colors{\"banana\"});"
+
+let test_keyword_literals_compile () =
+  let source =
+    {|
+let key = name:
+let person = {name: "Shelm", age: 9}
+println(key)
+println(person["name"])
+|}
+  in
+  let code = compile_perl source in
+  assert_contains "keyword-literal" code "my $key = \"name\";";
+  assert_contains "keyword-hash-name" code "\"name\" => \"Shelm\"";
+  assert_contains "keyword-hash-age" code "\"age\" => 9";
+  assert_contains "keyword-index-name" code "$person{\"name\"}"
+
+let test_def_binding_compile () =
+  let source =
+    {|
+def x = 41
+def y = x + 1
+println(string_of(y))
+|}
+  in
+  let code = compile_perl source in
+  assert_contains "def-x" code "my $x = 41;";
+  assert_contains "def-y" code "my $y = ($x + 1);"
 
 let test_match_case_compile () =
   let source =
@@ -128,18 +155,42 @@ end
   assert_contains "continue" code "next;";
   assert_contains "break" code "last;"
 
-let test_lambda_rejected () =
+let test_fun_expr_compile () =
   let source =
     {|
-let f = fn(x) { x * 2 }
+let f = fun(x) do
+  return x * 2
+end
+|}
+  in
+  let code = compile_perl source in
+  assert_contains "fun-expr-let" code "my $f = sub { my $x = shift;";
+  assert_contains "fun-expr-body" code "return ($x * 2);"
+
+let test_legacy_fn_rejected () =
+  let source =
+    {|
+fn add x, y do
+  return x + y
+end
 |}
   in
   match compile_perl_result source with
-  | Ok _ -> failwith "lambda should be rejected in speed-first profile"
+  | Ok _ -> failwith "legacy fn syntax should be rejected"
   | Error err ->
     let msg = Shelm_lib.Errors.format_error err in
-    if not (contains_substring msg "Parse error") then
-      failwith (Printf.sprintf "expected parse error for lambda, got: %s" msg)
+    if not (contains_substring msg "not supported") then
+      failwith (Printf.sprintf "expected compatibility rejection for fn syntax, got: %s" msg)
+
+let test_legacy_for_rejected () =
+  let source =
+    {|
+for x in [1, 2] do
+  println(x)
+end
+|}
+  in
+  assert_parse_error_contains "legacy-for" source "`for` is not supported"
 
 let test_brace_blocks_rejected () =
   let source =
@@ -226,12 +277,16 @@ let run name f =
     exit 1
 
 let () =
-  run "optional-paren fn defs compile" test_optional_paren_fn_defs;
+  run "defun defs compile" test_defun_defs_compile;
   run "index syntax stays index" test_index_not_rewritten_as_call;
+  run "keyword literals compile" test_keyword_literals_compile;
+  run "def bindings compile" test_def_binding_compile;
   run "match/case compile" test_match_case_compile;
   run "type/enum compile" test_type_enum_compile;
   run "break/continue compile" test_break_continue_compile;
-  run "lambda rejected" test_lambda_rejected;
+  run "fun expression compile" test_fun_expr_compile;
+  run "legacy fn rejected" test_legacy_fn_rejected;
+  run "legacy for rejected" test_legacy_for_rejected;
   run "brace blocks rejected" test_brace_blocks_rejected;
   run "colon blocks rejected" test_colon_blocks_rejected;
   run "if-do rejected" test_if_do_rejected;

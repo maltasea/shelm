@@ -275,7 +275,7 @@
           <div class="meta">
             <h2>At a Glance</h2>
             <ul>
-              <li>Source extension: <code>.by</code></li>
+              <li>Source extension: <code>.shlm</code></li>
               <li>Targets: <code>perl</code>, <code>ocaml</code>, <code>go</code>, <code>bytecode</code></li>
               <li>Canonical style: keyword headers + <code>end</code></li>
             </ul>
@@ -303,7 +303,7 @@
         <section class="card two" id="quickstart">
           <h2>Quickstart</h2>
           <pre><code>opam exec -- dune build
-opam exec -- ./_build/default/bin/shelm.exe examples/hello.by --target perl &gt; hello.pl
+opam exec -- ./_build/default/bin/shelm.exe examples/hello.shlm --target perl &gt; hello.pl
 perl hello.pl</code></pre>
           <p class="cmd">Run all conformance checks: <code>./scripts/check-conformance.sh</code></p>
         </section>
@@ -396,13 +396,13 @@ end</code></pre>
           <ul>
             <li>Bytecode target is optimization anchor.</li>
             <li>Syntax favors deterministic parsing and cheap lowering.</li>
-            <li>No implicit closure/lambda syntax in the core profile.</li>
+            <li>No implicit capture closures in the core profile.</li>
             <li>Runtime-costly features should be explicit and opt-in.</li>
           </ul>
           <h3>Handy Commands</h3>
-          <pre><code>opam exec -- ./_build/default/bin/shelm.exe examples/arrays.by --target go
-opam exec -- ./_build/default/bin/shelm.exe benchmarks/prime_count.by --target bytecode
-opam exec -- ./_build/default/bin/shelm.exe benchmarks/prime_count.by --benchmark benchmarks/prime_count.pl --iterations 10</code></pre>
+          <pre><code>opam exec -- ./_build/default/bin/shelm.exe examples/arrays.shlm --target go
+opam exec -- ./_build/default/bin/shelm.exe benchmarks/prime_count.shlm --target bytecode
+opam exec -- ./_build/default/bin/shelm.exe benchmarks/prime_count.shlm --benchmark benchmarks/prime_count.pl --iterations 10</code></pre>
         </section>
       </div>
 

@@ -18,16 +18,16 @@ This report validates repository conformance against `LANG_SPEC.md` (implemented
 ## Checks Performed
 
 1. `dune build` and `dune runtest` pass.
-2. CLI enforces `.by` source extension.
-3. `do/end` emits deprecation warning.
-4. All `examples/*.by` and `benchmarks/*.by` compile for:
+2. CLI enforces `.shlm` source extension.
+3. Keyword/end block syntax enforcement rejects non-canonical forms.
+4. All `examples/*.shlm` and `benchmarks/*.shlm` compile for:
    - `perl`
    - `ocaml`
    - `go`
    - `bytecode`
-5. Generated Perl from all sample `.by` files executes successfully.
+5. Generated Perl from all sample `.shlm` files executes successfully.
 6. CLI benchmark mode works:
-   - `shelm benchmarks/prime_count.by --benchmark benchmarks/prime_count.pl --iterations 1`
+   - `shelm benchmarks/prime_count.shlm --benchmark benchmarks/prime_count.pl --iterations 1`
 7. Spec/test/conformance files are present:
    - `LANG_SPEC.md`
    - `scripts/check-conformance.sh`

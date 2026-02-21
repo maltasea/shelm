@@ -321,14 +321,17 @@ and normalize_call_form s =
     in
     let sym_end = read_sym 1 in
     let head = String.sub s 0 sym_end in
-    if head = "if" || head = "else" || head = "while" || head = "for" || head = "foreach"
-       || head = "let" || head = "fn" || head = "rec" || head = "return" || head = "unless"
+    if head = "if" || head = "else" || head = "while" || head = "foreach"
+       || head = "let" || head = "def" || head = "defun" || head = "fun"
+       || head = "for" || head = "fn" || head = "rec"
+       || head = "return" || head = "unless"
        || head = "match" || head = "case" || head = "enum" || head = "type"
        || head = "break" || head = "continue" then None
     else
       let rest = trim (String.sub s sym_end (len - sym_end)) in
       if rest = "" then None
       else if is_operator_prefix rest.[0] then None
+      else if rest.[0] = ':' then None
       else if rest.[0] = '[' || rest.[0] = '{' then None
       else
         let args =
@@ -361,16 +364,10 @@ let normalize_if_like prefix line =
     | None -> None
   else None
 
-let normalize_for line =
-  let prefix_len =
-    if starts_with_keyword line "for" then Some 3
-    else if starts_with_keyword line "foreach" then Some 7
-    else None
-  in
-  match prefix_len with
-  | None -> None
-  | Some p ->
-    let rest = trim (String.sub line p (String.length line - p)) in
+let normalize_foreach line =
+  if not (starts_with_keyword line "foreach") then None
+  else
+    let rest = trim (String.sub line 7 (String.length line - 7)) in
     let inner_opt = strip_trailing_block_opener rest in
     match inner_opt with
     | None -> None
@@ -383,22 +380,36 @@ let normalize_for line =
         if not (starts_with_keyword tail "in") then None
         else
           let iter_expr = trim (String.sub tail 2 (String.length tail - 2)) in
-          Some (Printf.sprintf "for %s in %s {" name (normalize_expr iter_expr))
+          Some (Printf.sprintf "foreach %s in %s {" name (normalize_expr iter_expr))
 
-let normalize_fn_header line =
+let normalize_defun_header line =
   let t = trim line in
-  let is_fn_header =
-    starts_with_keyword t "fn"
-    || (
-      starts_with_keyword t "rec"
-      && let rest = trim (String.sub t 3 (String.length t - 3)) in
-         starts_with_keyword rest "fn"
-    )
-  in
-  if not is_fn_header then None
+  if not (starts_with_keyword t "defun") then None
   else
     match strip_trailing_block_opener t with
     | Some body_head -> Some (body_head ^ " {")
+    | None -> None
+
+let normalize_fun_binding_header line =
+  match find_assignment_eq line with
+  | None -> None
+  | Some i ->
+    let left = trim (String.sub line 0 i) in
+    let right = trim (String.sub line (i + 1) (String.length line - i - 1)) in
+    begin
+      match strip_trailing_block_opener right with
+      | None -> None
+      | Some rhs_head when starts_with_keyword rhs_head "fun" ->
+        Some (left ^ " = " ^ normalize_expr rhs_head ^ " {")
+      | Some _ -> None
+    end
+
+let normalize_fun_expr_header line =
+  let t = trim line in
+  if not (starts_with_keyword t "fun") then None
+  else
+    match strip_trailing_block_opener t with
+    | Some head -> Some (normalize_expr head ^ " {")
     | None -> None
 
 let normalize_unless line =
@@ -528,8 +539,8 @@ let rewrite_keyword_blocks (lines : string list) : string list =
         | None ->
           loop (line :: acc) rest
         end
-      else if starts_with_keyword t "for" || starts_with_keyword t "foreach" then
-        begin match normalize_for t with
+      else if starts_with_keyword t "foreach" then
+        begin match normalize_foreach t with
         | Some normalized when String.length normalized > 0
                               && normalized.[String.length normalized - 1] = '{' ->
           loop (open_regular normalized acc) rest
@@ -544,10 +555,16 @@ let rewrite_keyword_blocks (lines : string list) : string list =
         | None ->
           loop (line :: acc) rest
         end
-      else if starts_with_keyword t "fn"
-           || (starts_with_keyword t "rec"
-               && let r = trim (String.sub t 3 (String.length t - 3)) in starts_with_keyword r "fn") then
-        begin match normalize_fn_header t with
+      else if starts_with_keyword t "defun" then
+        begin match normalize_defun_header t with
+        | Some normalized when String.length normalized > 0
+                              && normalized.[String.length normalized - 1] = '{' ->
+          loop (open_regular normalized acc) rest
+        | _ ->
+          loop (line :: acc) rest
+        end
+      else if starts_with_keyword t "fun" then
+        begin match normalize_fun_expr_header t with
         | Some normalized when String.length normalized > 0
                               && normalized.[String.length normalized - 1] = '{' ->
           loop (open_regular normalized acc) rest
@@ -587,6 +604,13 @@ let rewrite_keyword_blocks (lines : string list) : string list =
           | _ ->
             loop (line :: acc) rest
         end
+      else if String.contains t '=' then
+        begin match normalize_fun_binding_header t with
+        | Some normalized ->
+          loop (open_regular normalized acc) rest
+        | None ->
+          loop (line :: acc) rest
+        end
       else
         loop (line :: acc) rest
   in
@@ -602,7 +626,7 @@ let normalize_line line =
     | Some x -> x
     | None ->
       begin
-        match normalize_fn_header t with
+        match normalize_defun_header t with
         | Some x -> x
         | None ->
           begin
@@ -618,7 +642,7 @@ let normalize_line line =
             | Some x -> x
             | None ->
           begin
-            match normalize_for t with
+            match normalize_foreach t with
             | Some x -> x
             | None ->
           if ends_with_keyword t "do" then
@@ -631,14 +655,14 @@ let normalize_line line =
                   match normalize_if_like "while " t with
                   | Some x -> x
                   | None -> begin
-                      match normalize_for t with
+                      match normalize_foreach t with
                       | Some x -> x
                       | None ->
                         if starts_with_keyword t "return" then
                           let expr = trim (String.sub t 6 (String.length t - 6)) in
                           if expr = "" then t
                           else "return " ^ normalize_expr expr
-                        else if starts_with_keyword t "let" then begin
+                        else if starts_with_keyword t "let" || starts_with_keyword t "def" then begin
                           match find_assignment_eq t with
                           | Some i ->
                             let left = trim (String.sub t 0 i) in
@@ -721,14 +745,21 @@ let validate_source_syntax (lines : string list) : unit =
       end else if starts_with_keyword t "while" then begin
         check_header line_no t "do" "while <cond> do ... end";
         loop (line_no + 1) rest
-      end else if starts_with_keyword t "for" || starts_with_keyword t "foreach" then begin
-        check_header line_no t "do" "for <name> in <expr> do ... end";
+      end else if starts_with_keyword t "for" then begin
+        reject line_no "`for` is not supported; use `foreach <name> in <expr> do ... end`."
+      end else if starts_with_keyword t "foreach" then begin
+        check_header line_no t "do" "foreach <name> in <expr> do ... end";
         loop (line_no + 1) rest
       end else if starts_with_keyword t "enum" then begin
         check_header line_no t "do" "enum <name> do ... end";
         loop (line_no + 1) rest
       end else if starts_with_keyword t "fn" || is_rec_fn_header t then begin
-        check_header line_no t "do" "fn <name> ... do ... end";
+        reject line_no "`fn`/`rec fn` are not supported; use `defun <name> ... do ... end`."
+      end else if starts_with_keyword t "defun" then begin
+        check_header line_no t "do" "defun <name> ... do ... end";
+        loop (line_no + 1) rest
+      end else if starts_with_keyword t "fun" then begin
+        check_header line_no t "do" "fun(...) do ... end";
         loop (line_no + 1) rest
       end else if starts_with_keyword t "match" then begin
         check_header line_no t "with" "match <expr> with ... end";

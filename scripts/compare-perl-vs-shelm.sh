@@ -4,7 +4,7 @@ set -euo pipefail
 usage() {
   cat <<'EOF'
 Usage:
-  scripts/compare-perl-vs-shelm.sh --perl <reference.pl> --shelm <equivalent.by> [options]
+  scripts/compare-perl-vs-shelm.sh --perl <reference.pl> --shelm <equivalent.shlm> [options]
 
 Options:
   --iterations <n>     Number of timed runs per program (default: 20)

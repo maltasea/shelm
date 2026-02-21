@@ -4,7 +4,7 @@
 
 This document is the normative language spec for the current implementation in this repository.
 
-- Source file extension: `.by`
+- Source file extension: `.shlm`
 - Compiler entrypoint: `bin/shelm.ml`
 - Frontend pipeline: `reader -> lexer -> parser -> tuple AST -> normalize -> macro_expand`
 - Dedicated syntax grammar: `SYNTAX_SPEC.md`
@@ -21,7 +21,7 @@ This document is the normative language spec for the current implementation in t
   - First char: `a-z`, `A-Z`, `_`
   - Rest: identifier chars plus digits plus `-` and `?`
 - Keywords:
-  - `let`, `fn`, `rec`, `if`, `else`, `while`, `for`, `in`, `return`
+  - `let`, `def`, `defun`, `fun`, `if`, `else`, `while`, `foreach`, `in`, `return`
   - `type`, `enum`, `break`, `continue`
   - `true`, `false`, `nil`, `not`, `and`, `or`
 
@@ -34,10 +34,9 @@ The reader enforces keyword/end block syntax and normalizes source before lexing
 - Canonical blocks are keyword/end style:
   - `if cond then ... end`
   - `while cond do ... end`
-  - `for x in xs do ... end`
   - `foreach x in xs do ... end`
   - `enum name do ... end`
-  - `fn name ... do ... end`
+  - `defun name ... do ... end`
   - `match expr with ... end`
 - Brace/colon block forms are rejected.
 - `if ... do`/`elif ... do`/`else do` are rejected.
@@ -45,7 +44,6 @@ The reader enforces keyword/end block syntax and normalizes source before lexing
 ### Additional Reader Sugar
 
 - `unless cond do ... end` rewrites to `if not (cond) ... end`
-- `foreach x in xs do ... end` rewrites to `for x in xs do ... end`
 - Call sugar rewrites:
   - `print x` -> `print(x)`
   - `f a, b` -> `f(a, b)`
@@ -79,27 +77,34 @@ The reader enforces keyword/end block syntax and normalizes source before lexing
 - `if cond then ... elif cond then ... else ... end`
 - `match expr with | pattern -> ... end`
 - `while cond do ... end`
-- `for name in expr do ... end`
 - `foreach name in expr do ... end`
 - `break`
 - `continue`
 - Function definitions:
-  - `fn name do ... end`
-  - `fn name x do ... end`
-  - `fn name x, y do ... end`
-  - `fn name(x, y) do ... end`
-  - `fn name ... do ... end`
-  - `rec fn ...` variants are also supported.
+  - `defun name do ... end`
+  - `defun name x do ... end`
+  - `defun name x, y do ... end`
+  - `defun name(x, y) do ... end`
+  - `defun name ... do ... end`
+- Value/function bindings:
+  - `def name = expr`
+  - `let name = expr`
+  - `let f = fun x, y do ... end`
 - `return expr` (expression is required)
 - Expression statement (`expr`)
 
 ## Expressions
 
 - Literals:
-  - `int`, `float`, `string`, `true`, `false`, `nil`
-  - arrays: `[a, b, c]`
-  - hashes: `{k: v, ...}`
-  - regex: `/pattern/flags`
+  - `9` (int)
+  - `8.3` (float)
+  - `"hello"` (string)
+  - `true/false` (bool)
+  - `nil`
+  - `name:` (keyword literal; evaluates to string `"name"`)
+- Arrays: `[a, b, c]`
+- Maps/Dicts: `{ name: "bernd", age: 88 }` (keyword-key style)
+- Regex: `/pattern/flags`
 - Variables: `name`
 - Indexing: `expr[index]`
 - Function calls: `f(...)`
@@ -138,8 +143,12 @@ The following are not part of the implemented parser/AST surface today:
 
 - Algebraic enum payload constructors (e.g. `Some(x)` from enum declaration)
 - Static type checking/inference
-- Implicit closures / lambda expressions
+- Type annotation/signature syntax on bindings, params, or returns
+- Capturing closures
 - TCO guarantees
+- `rec` keyword forms
+- `fn` keyword forms
+- `for` loop keyword forms
 
 ## Match / Case
 
@@ -165,6 +174,10 @@ end
 
 - `type` declarations are accepted and carried through AST/bytecode lowering.
 - Backends currently treat `type` as compile-time-only metadata (no runtime checks).
+- Current `type` surface is declaration-only: `type Name = expr`.
+- There is no annotation/signature syntax in v1 for:
+  - variable bindings (`let x: T = ...`)
+  - function parameters/returns (`defun f(x: T) -> U do ... end`)
 - `enum` declares runtime constants for variants.
   - Runtime value format is a compact integer tag (`0..n-1` by declaration order).
   - Example:
@@ -201,4 +214,4 @@ Use:
 scripts/check-conformance.sh
 ```
 
-This runs build/tests, validates CLI rules, compiles all `.by` examples/benchmarks for every target, checks keyword/end-only syntax enforcement, and verifies benchmark mode.
+This runs build/tests, validates CLI rules, compiles all `.shlm` examples/benchmarks for every target, checks keyword/end-only syntax enforcement, and verifies benchmark mode.

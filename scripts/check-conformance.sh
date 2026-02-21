@@ -29,25 +29,25 @@ echo "[1/7] Build + tests"
 run_dune build
 run_dune runtest
 
-echo "[2/7] .by extension enforcement"
+echo "[2/7] .shlm extension enforcement"
 if run_shelm benchmarks/prime_count.pl --target perl >/tmp/shelm-ext.out 2>&1; then
-  echo "Expected extension check to fail for non-.by file" >&2
+  echo "Expected extension check to fail for non-.shlm file" >&2
   exit 1
 fi
-if ! rg -q "must use \\.by extension" /tmp/shelm-ext.out; then
-  echo "Missing expected .by extension error message" >&2
+if ! rg -q "must use \\.shlm extension" /tmp/shelm-ext.out; then
+  echo "Missing expected .shlm extension error message" >&2
   cat /tmp/shelm-ext.out >&2
   exit 1
 fi
 
 echo "[3/7] keyword/end-only block syntax enforcement"
-cat > /tmp/shelm-if-do.by <<'EOF'
+cat > /tmp/shelm-if-do.shlm <<'EOF'
 let x = 1
 if x == 1 do
   println("ok")
 end
 EOF
-if run_shelm /tmp/shelm-if-do.by --target perl >/tmp/shelm-if-do.out 2>&1; then
+if run_shelm /tmp/shelm-if-do.shlm --target perl >/tmp/shelm-if-do.out 2>&1; then
   echo "Expected if ... do to be rejected" >&2
   exit 1
 fi
@@ -57,13 +57,13 @@ if ! rg -q "if \\.\\.\\. do.*not supported" /tmp/shelm-if-do.out; then
   exit 1
 fi
 
-cat > /tmp/shelm-brace-block.by <<'EOF'
+cat > /tmp/shelm-brace-block.shlm <<'EOF'
 let x = 1
 if x == 1 {
   println("ok")
 }
 EOF
-if run_shelm /tmp/shelm-brace-block.by --target perl >/tmp/shelm-brace-block.out 2>&1; then
+if run_shelm /tmp/shelm-brace-block.shlm --target perl >/tmp/shelm-brace-block.out 2>&1; then
   echo "Expected brace block syntax to be rejected" >&2
   exit 1
 fi
@@ -73,29 +73,59 @@ if ! rg -q "Brace blocks are not supported" /tmp/shelm-brace-block.out; then
   exit 1
 fi
 
-echo "[4/7] Compile all .by files to all targets"
-BY_FILES=()
-while IFS= read -r path; do
-  BY_FILES+=("$path")
-done < <(find examples benchmarks -type f -name '*.by' | sort)
-if [[ "${#BY_FILES[@]}" -eq 0 ]]; then
-  echo "No .by files found in examples/benchmarks" >&2
+cat > /tmp/shelm-legacy-for.shlm <<'EOF'
+for x in [1, 2] do
+  println(x)
+end
+EOF
+if run_shelm /tmp/shelm-legacy-for.shlm --target perl >/tmp/shelm-legacy-for.out 2>&1; then
+  echo "Expected legacy for-loop syntax to be rejected" >&2
   exit 1
 fi
-for src in "${BY_FILES[@]}"; do
+if ! rg -q '`for` is not supported' /tmp/shelm-legacy-for.out; then
+  echo "Missing expected legacy-for rejection message" >&2
+  cat /tmp/shelm-legacy-for.out >&2
+  exit 1
+fi
+
+cat > /tmp/shelm-legacy-fn.shlm <<'EOF'
+fn add x, y do
+  return x + y
+end
+EOF
+if run_shelm /tmp/shelm-legacy-fn.shlm --target perl >/tmp/shelm-legacy-fn.out 2>&1; then
+  echo "Expected legacy fn syntax to be rejected" >&2
+  exit 1
+fi
+if ! rg -q '`fn`/`rec fn` are not supported' /tmp/shelm-legacy-fn.out; then
+  echo "Missing expected legacy-fn rejection message" >&2
+  cat /tmp/shelm-legacy-fn.out >&2
+  exit 1
+fi
+
+echo "[4/7] Compile all .shlm files to all targets"
+SHLM_FILES=()
+while IFS= read -r path; do
+  SHLM_FILES+=("$path")
+done < <(find examples benchmarks -type f -name '*.shlm' | sort)
+if [[ "${#SHLM_FILES[@]}" -eq 0 ]]; then
+  echo "No .shlm files found in examples/benchmarks" >&2
+  exit 1
+fi
+for src in "${SHLM_FILES[@]}"; do
   for target in perl ocaml go bytecode; do
     run_shelm "$src" --target "$target" >"/tmp/shelm-conformance-$(basename "$src").$target.out"
   done
 done
 
-echo "[5/7] Execute generated Perl for all sample .by files"
-for src in "${BY_FILES[@]}"; do
+echo "[5/7] Execute generated Perl for all sample .shlm files"
+for src in "${SHLM_FILES[@]}"; do
   run_shelm "$src" --target perl > /tmp/shelm-sample.pl
   perl /tmp/shelm-sample.pl >/tmp/shelm-sample.out
 done
 
 echo "[6/7] Benchmark CLI mode"
-run_shelm benchmarks/prime_count.by --benchmark benchmarks/prime_count.pl --iterations 1 >/tmp/shelm-bench.out
+run_shelm benchmarks/prime_count.shlm --benchmark benchmarks/prime_count.pl --iterations 1 >/tmp/shelm-bench.out
 if ! rg -q "Perl benchmark comparison" /tmp/shelm-bench.out; then
   echo "Benchmark output missing expected header" >&2
   cat /tmp/shelm-bench.out >&2

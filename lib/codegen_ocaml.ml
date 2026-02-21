@@ -322,14 +322,6 @@ and gen_stmt = function
     emitln (Printf.sprintf "let %s = ref (VFunc (fun _args -> %s" name (String.concat " " param_binds));
     emit body_str;
     emitln ")) in"
-  | RecFnDef (name, params, body) ->
-    let param_binds = List.mapi (fun i p ->
-      Printf.sprintf "let %s = ref (List.nth _args %d) in" p i
-    ) params in
-    let body_str = gen_stmts_returning body in
-    emitln (Printf.sprintf "let %s = ref (VFunc (fun _args -> %s" name (String.concat " " param_binds));
-    emit body_str;
-    emitln ")) in"
   | Return e ->
     emitln (Printf.sprintf "(%s)" (gen_expr e))
   | ExprStmt (RegexReplace (Var name, pat, repl, flags)) ->

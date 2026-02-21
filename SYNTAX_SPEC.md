@@ -1,6 +1,6 @@
 # Shelm Syntax Specification (Implemented)
 
-This document defines the implemented `.by` syntax.
+This document defines the implemented `.shlm` syntax.
 
 It has two layers:
 
@@ -24,11 +24,13 @@ Lowering from surface to core is form-based and does not require semantic analys
 
 ### 1.3 Literals
 
-- Integer: `123`
-- Float: `123.45`
-- String: `"text"` with escapes `\n`, `\t`, `\\`, `\"`
-- Booleans: `true`, `false`
+- Integer: `9` (example)
+- Float: `8.3` (example)
+- String: `"hello"` with escapes `\n`, `\t`, `\\`, `\"`
+- Booleans: `true/false` (bool)
 - Nil: `nil`
+- Keyword literal: `name:` (evaluates to string `"name"`)
+- Map/Dict literal example: `{ name: "bernd", age: 88 }`
 - Regex literal: `/pattern/flags` where flags are `[gimsx]*`
 
 ### 1.4 Identifiers
@@ -43,7 +45,7 @@ ident       = ident_start , { ident_char } ;
 
 Parser keywords:
 
-`let fn if else while for rec in return match case type enum break continue true false nil not and or`
+`let def defun fun if else while foreach in return match case type enum break continue true false nil not and or`
 
 Reader block keywords:
 
@@ -65,11 +67,9 @@ Blocks are explicit and closed with `end`.
 - `if <expr> then ... end`
 - `elif <expr> then`
 - `while <expr> do ... end`
-- `for <name> in <expr> do ... end`
 - `foreach <name> in <expr> do ... end`
 - `enum <name> do ... end`
-- `fn ... do ... end`
-- `rec fn ... do ... end`
+- `defun ... do ... end`
 - `match <expr> with ... end`
 
 `match` cases use pipe syntax:
@@ -94,14 +94,15 @@ surface_statement =
     "type" , ident , "=" , expr
   | enum_surface
   | "let" , ident , "=" , expr
+  | "def" , ident , "=" , expr
   | ident , "=" , expr
   | postfix_expr , "[" , expr , "]" , "=" , expr
   | postfix_expr , "=~" , "s/" , regex_body , "/" , regex_body , "/" , regex_flags
   | if_surface
   | while_surface
-  | for_surface
+  | foreach_surface
   | match_surface
-  | fn_surface
+  | defun_surface
   | "break"
   | "continue"
   | "return" , expr
@@ -111,7 +112,7 @@ if_surface =
     "if" , expr , "then" , block_body , { "elif" , expr , "then" , block_body } , [ "else" , block_body ] , "end" ;
 
 while_surface = "while" , expr , "do" , block_body , "end" ;
-for_surface   = ("for" | "foreach") , ident , "in" , expr , "do" , block_body , "end" ;
+foreach_surface = "foreach" , ident , "in" , expr , "do" , block_body , "end" ;
 
 enum_surface  = "enum" , ident , "do" , enum_variants_surface , "end" ;
 enum_variants_surface = ident , { sep , ident } ;
@@ -119,13 +120,10 @@ enum_variants_surface = ident , { sep , ident } ;
 match_surface = "match" , expr , "with" , match_pipe_case , { sep , match_pipe_case } , "end" ;
 match_pipe_case = "|" , match_pattern , "->" , [ expr | block_body ] ;
 
-fn_surface =
-    "fn" , ident , "do" , block_body , "end"
-  | "fn" , ident , bare_params , "do" , block_body , "end"
-  | "fn" , ident , "(" , [ params ] , ")" , "do" , block_body , "end"
-  | "rec" , "fn" , ident , "do" , block_body , "end"
-  | "rec" , "fn" , ident , bare_params , "do" , block_body , "end"
-  | "rec" , "fn" , ident , "(" , [ params ] , ")" , "do" , block_body , "end" ;
+defun_surface =
+    "defun" , ident , "do" , block_body , "end"
+  | "defun" , ident , bare_params , "do" , block_body , "end"
+  | "defun" , ident , "(" , [ params ] , ")" , "do" , block_body , "end" ;
 
 bare_params = ident , { "," , ident } ;
 params      = ident , { "," , ident } ;
@@ -138,15 +136,14 @@ block_body  = { surface_statement , sep } ;
 Accepted and rewritten before parse:
 
 1. `unless cond do ... end` -> `if not (cond) then ... end`
-2. `foreach x in xs do ... end` -> `for x in xs do ... end`
-3. Call sugar:
+2. Call sugar:
    - `f x` -> `f(x)`
    - `f a, b` -> `f(a, b)`
-4. FFI sugar:
+3. FFI sugar:
    - `$foo/bar` -> `host_get("foo/bar")`
    - `&foo/bar(a, b)` -> `host_call("foo/bar", a, b)`
    - `&foo/bar a, b` -> `host_call("foo/bar", a, b)`
-5. Regex shorthand:
+4. Regex shorthand:
    - `#"a+b"` -> `/a+b/`
 
 ## 3) Normalized Core Grammar (Parser Input)
@@ -172,6 +169,7 @@ stmt =
     "type" , ident , "=" , expr
   | "enum" , ident , enum_block
   | "let" , ident , "=" , expr
+  | "def" , ident , "=" , expr
   | ident , "=" , expr
   | postfix_expr , "[" , expr , "]" , "=" , expr
   | postfix_expr , regex_replace
@@ -180,11 +178,10 @@ stmt =
   | "if" , expr , block , "else" , block
   | "if" , expr , block , "else" , else_if
   | "while" , expr , block
-  | "for" , ident , "in" , expr , block
+  | "foreach" , ident , "in" , expr , block
   | "break"
   | "continue"
-  | fn_def
-  | rec_fn_def
+  | defun_def
   | "return" , expr
   | expr ;
 
@@ -195,15 +192,10 @@ else_if =
   | "if" , expr , block , "else" , block
   | "if" , expr , block , "else" , else_if ;
 
-fn_def =
-    "fn" , ident , block
-  | "fn" , ident , bare_params , block
-  | "fn" , ident , "(" , [ params ] , ")" , block ;
-
-rec_fn_def =
-    "rec" , "fn" , ident , block
-  | "rec" , "fn" , ident , bare_params , block
-  | "rec" , "fn" , ident , "(" , [ params ] , ")" , block ;
+defun_def =
+    "defun" , ident , block
+  | "defun" , ident , bare_params , block
+  | "defun" , ident , "(" , [ params ] , ")" , block ;
 
 enum_block  = "{" , sep_lines , [ enum_variants ] , "}" ;
 enum_variants = ident , { ("," | sep) , ident } , [ "," | sep ] ;
@@ -237,17 +229,27 @@ primary_expr =
     int_lit
   | float_lit
   | string_lit
+  | keyword_lit
   | "true"
   | "false"
   | "nil"
   | ident
+  | fun_expr
   | "(" , expr , ")"
   | "[" , [ array_elems ] , "]"
   | "{" , [ hash_pairs ] , "}"
   | regex_lit ;
 
+fun_expr =
+    "fun" , block
+  | "fun" , bare_params , block
+  | "fun" , "(" , [ params ] , ")" , block ;
+
+keyword_lit = ident , ":" ;
+
 array_elems = expr , { "," , expr } ;
-hash_pairs  = expr , ":" , expr , { "," , expr , ":" , expr } ;
+hash_pairs  = hash_pair , { "," , hash_pair } ;
+hash_pair   = expr , ":" , expr | keyword_lit , expr ;
 ```
 
 ## 4) Deterministic Rewrites (Surface -> Core)
@@ -256,10 +258,10 @@ hash_pairs  = expr , ":" , expr , { "," , expr , ":" , expr } ;
 2. `elif <e> then` -> `} else if <e> {`
 3. `else` -> `} else {`
 4. `while <e> do` -> `while <e> {`
-5. `for <x> in <e> do` -> `for <x> in <e> {`
-6. `foreach <x> in <e> do` -> `for <x> in <e> {`
-7. `enum <name> do` -> `enum <name> {`
-8. `fn ... do` / `rec fn ... do` -> `fn ... {` / `rec fn ... {`
+5. `foreach <x> in <e> do` -> `foreach <x> in <e> {`
+6. `enum <name> do` -> `enum <name> {`
+7. `defun ... do` -> `defun ... {`
+8. `fun ... do` -> `fun ... {`
 9. `match <e> with` -> `match <e> {`
 10. `| <pat> -> <expr>` -> `case <pat> { <expr> }`
 11. `| <pat> ->` -> `case <pat> {` (multiline case body)
@@ -267,6 +269,9 @@ hash_pairs  = expr , ":" , expr , { "," , expr , ":" , expr } ;
 
 ## 5) Syntax-Level Exclusions
 
-- No anonymous `fn` expression form (`let f = fn(x) { ... }` is rejected).
+- No `fn` forms.
+- No `rec` forms.
+- No `for` forms.
+- No type annotation/signature forms (for bindings, params, or returns).
 - No closure/capture syntax.
 - No semicolon-separated statement grammar.

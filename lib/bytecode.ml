@@ -373,21 +373,6 @@ and compile_stmt st (n : node) : (string list, Errors.compile_error) result =
     }];
     Ok (emit_loc meta :: [Printf.sprintf "MAKE_FUNC %s %d" (emit_ident fn_id) (List.length param_names);
                            Printf.sprintf "STORE %s" (emit_ident fn_name)])
-  | Node ("defn-rec", meta, [name; Node ("params", _, params); Node ("do", _, body_nodes)]) ->
-    let* fn_name = sym_name "stmt:defn-rec-name" name in
-    let* param_names = map_results (sym_name "stmt:defn-rec-param") params in
-    let fn_id = fn_name in
-    let* body_code = compile_block st body_nodes in
-    let body_code = ensure_terminal_return body_code in
-    st.functions <- st.functions @ [{
-      id = fn_id;
-      params = param_names;
-      body = body_code;
-      is_rec = true;
-      meta;
-    }];
-    Ok (emit_loc meta :: [Printf.sprintf "MAKE_FUNC %s %d rec" (emit_ident fn_id) (List.length param_names);
-                           Printf.sprintf "STORE %s" (emit_ident fn_name)])
   | Node ("return", meta, [e]) ->
     let* e_code = compile_expr st e in
     Ok (emit_loc meta :: e_code @ ["RETURN"])
