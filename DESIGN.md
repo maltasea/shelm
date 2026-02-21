@@ -47,5 +47,5 @@ And use that bytecode for:
 ## Concrete Specs
 
 - `LANG_SPEC.md` is the source-level contract.
-- `BYTECODE_V1.md` is the bytecode direction document.
+- `lib/bytecode.ml` defines the bytecode output format.
 - Includes simple FFI syntax (`$path` host get, `&path(...)` host call).

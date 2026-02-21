@@ -1,202 +1,69 @@
- # Shelm Multi-Backend Spec (Session Handoff)
+# Shelm
 
-  ## Normative Status
+Shelm is a small, speed-first language that compiles to multiple backends. Source files use the `.shlm` extension.
 
-  - This README is a planning/handoff document and includes roadmap items.
-  - The implemented language contract is `LANG_SPEC.md`.
-  - Conformance checks are run via `scripts/check-conformance.sh`.
-  - Latest conformance run summary is in `CONFORMANCE_REPORT.md`.
-  - Newcomer docs: `docs/NEWCOMER_GUIDE.md` and `docs/welcome.html`.
+## Quick Start
 
-  ## Summary
+Build the compiler:
 
-  Build Shelm as a single-host compiler with gradually added backends.
-  First production backend after current work: Python, targeting semantic parity for core language + collections + regex (not full async/I/O initially).
+```bash
+opam exec -- dune build
+```
 
-  This spec is decision-complete for next implementation prompt.
+Write `hello.shlm`:
 
-  ## Scope and Goals
+```shelm
+let name = "World"
+println("Hello, " ++ name ++ "!")
+```
 
-  ### In scope
+Compile and run:
 
-  1. Stabilize compiler pipeline around canonical tuple AST stages:
+```bash
+opam exec -- ./_build/default/bin/shelm.exe hello.shlm --target perl > hello.pl
+perl hello.pl
+```
 
-  - Reader -> Parser -> Tuple AST -> Normalize -> Macro Expand -> Backend Codegen
+## Targets
 
-  2. Keep current backends (perl, ocaml, go) compiling through unified pipeline.
-  3. Implement Python backend v1 with parity for:
+Shelm compiles to four backends:
 
-  - expressions, assignment, control flow, first-order functions
-  - core containers currently modeled in AST ([], {}-mapped forms already representable)
-  - string/array/hash builtins used by examples
-  - regex literals and regex builtins
+| Target | Flag | Output |
+|--------|------|--------|
+| Perl | `--target perl` | `.pl` file |
+| OCaml | `--target ocaml` | `.ml` file |
+| Go | `--target go` | `.go` file |
+| Bytecode | `--target bytecode` | `.bytecode` assembly |
 
-  4. Add backend conformance tests (shared source fixtures, expected outputs).
+## Perl Host / FFI
 
-  ### Out of scope (this phase)
+Generated Perl includes a host bridge for calling into Perl from Shelm:
 
-  - Full cross-platform compiler host support.
-  - Full async/runtime parity in Python v1.
-  - Full I/O builtin parity in Python v1.
-  - Major language grammar rewrite beyond current reader+parser compatibility.
+```shelm
+# Read a host value
+let now = $time/now_ms
 
-  ## Architectural Contract
+# Call a host function
+let result = &math/add(1, 2)
+```
 
-  ### Compiler portability
+Set `SHELM_PERL_HOST` to load a custom host file:
 
-  - Compiler host may remain single-host for now.
+```bash
+SHELM_PERL_HOST=runtime/perl_host_default.pl perl hello.pl
+```
 
-  ### Backend strategy
+## Benchmarking
 
-  - Add backends one-by-one; Python first.
-  - Every backend uses normalized tuple AST, not direct surface syntax parsing.
+Compare generated Perl against a reference Perl script:
 
-  ### Canonical internal model
+```bash
+opam exec -- ./_build/default/bin/shelm.exe benchmarks/prime_count.shlm \
+  --benchmark benchmarks/prime_count.pl \
+  --iterations 10
+```
 
-  - Tuple AST node shape remains canonical internally:
-  - [tag, [char_pos, line_nr, module_name], args[]]
-  - Existing Tuple_ast.node wrapper is authoritative.
-  - Backend codegen receives expanded tuple AST (or validated adapter output).
-
-  ## Public Interfaces / APIs
-
-  ### lib/shelm.ml
-
-  Maintain and use these APIs as primary:
-
-  1. target_of_string : string -> (target, compile_error) result
-  2. read_ast : ?module_name:string -> string -> (Tuple_ast.program, compile_error) result
-  3. compile_ast : target -> Tuple_ast.program -> (string, compile_error) result
-  4. compile_source_target : ?module_name:string -> string -> string -> (string, compile_error) result
-  5. compile_file_target : string -> string -> (string, compile_error) result
-
-  ### CLI
-
-  - bin/shelm.ml remains thin wrapper over compile_file_target.
-  - Target list will expand to include python when backend lands.
-
-  ## Reader / Syntax Rules (current expected behavior)
-
-  1. Line-based expressions normalize to call forms where applicable.
-  2. Comma-separated call args supported:
-
-  - printf "%s", concat ("ass", "hole")
-
-  3. Keyword/end block syntax is canonical and enforced:
-
-  - if cond then ... end
-  - while cond do ... end
-  - foreach x in xs do ... end
-  - match x with | ... -> ... end
-  - defun name ... do ... end
-
-  4. Brace and colon block forms are rejected at reader level.
-  5. Symbols allow - and ?.
-  6. Regex shorthand #"...“ is intended language syntax (must not conflict with comment handling).
-
-  ## Critical Fixes Required Before/With Python Backend
-
-  1. Resolve # ambiguity:
-
-  - #"...“, #[], #{} must not be consumed as comments.
-  - Keep comment syntax without breaking new literals.
-
-  2. Remove fragile generic ... do -> { rewrite:
-
-  - only rewrite do in valid statement contexts (if/while/foreach/defun/fun/else).
-
-  3. Preserve/restore accurate source positions:
-
-  - tuple AST metadata should use real parse positions.
-  - error coordinates should map to user source (not rewritten-only offsets).
-
-  ## Python Backend v1 Spec
-
-  ### Output format
-
-  - Default assumption: emit a single self-contained .py file (runtime helpers + program body).
-
-  ### Runtime model
-
-  Implement Python runtime helpers mirroring core semantic ops:
-
-  - truthiness/coercion helpers
-  - arithmetic/comparison ops with Shelm semantics
-  - concat/index/index-assign
-  - collection helpers (length/push/pop/shift/sort/reverse/keys/values/exists/delete/map/filter/each/join/split/substr/etc. as in v1 scope)
-  - regex helpers
-
-  ### Codegen pattern
-
-  - Follow existing backend style: emit helper runtime first, then translated program.
-  - Builtins dispatched explicitly in generator (like current Perl/OCaml/Go generators).
-  - Unknown function calls compile to runtime call helper.
-
-  ## Testing and Acceptance
-
-  ### Conformance test suite
-
-  Create shared tests run per backend (perl, ocaml, go, python once added):
-
-  1. Arithmetic + precedence
-  2. Conditionals (if/else if/else)
-  3. Loops (while, foreach in)
-  4. First-order functions + returns
-  5. Collections (array/hash operations currently supported)
-  6. String utilities
-  7. Regex match/replace/find-all
-  8. Reader syntax cases:
-
-  - comma arg calls
-  - paren grouping
-  - braces blocks (canonical)
-  - do/end blocks (compatibility)
-  - dashed/question symbols
-  - #"...“ literals
-
-  ### Acceptance criteria
-
-  - All existing examples compile via unified pipeline.
-  - Python backend v1 passes conformance subset defined above.
-  - No silent expression dropping due to comment/literal ambiguity.
-  - Error messages remain structured and include source location metadata.
-
-  ## Assumptions and Defaults
-
-  1. Compiler host portability is deferred.
-  2. Backend rollout is incremental; Python first.
-  3. Python v1 includes core+collections+regex, excluding full async/I/O parity.
-  4. Single-file Python output is the default packaging mode.
-  5. Tuple AST remains canonical internal representation.
-
-## Perl Host (Current)
-
-Perl output now includes a small host bridge:
-
-- `shelm_host_set(path, value)` registers a host value/function.
-- `host_get(path)` resolves a host value.
-- `host_call(path, args...)` resolves then invokes a host function.
-
-If `SHELM_PERL_HOST` is set, generated Perl loads that file at startup (`do $ENV{SHELM_PERL_HOST}`), so host paths can be registered externally.
-
-Default host file:
-
-- `runtime/perl_host_default.pl`
-
-It currently registers:
-
-- `time/now_s`
-- `time/now_ms`
-- `math/add`
-
-### Shelm host syntax
-
-- `$foo/bar` rewrites to `host_get("foo/bar")`
-- `&foo/bar(...)` rewrites to `host_call("foo/bar", ...)`
-
-## Perl vs Shelm Timing Script
-
-Use:
+Or use the standalone comparison script:
 
 ```bash
 scripts/compare-perl-vs-shelm.sh \
@@ -205,21 +72,19 @@ scripts/compare-perl-vs-shelm.sh \
   --iterations 50
 ```
 
-With host file:
+## Conformance
+
+Run the full conformance suite:
 
 ```bash
-scripts/compare-perl-vs-shelm.sh \
-  --perl path/to/reference.pl \
-  --shelm path/to/equivalent.shlm \
-  --host runtime/perl_host_default.pl \
-  --iterations 50
+./scripts/check-conformance.sh
 ```
 
-CLI wrapper:
+This builds, runs tests, compiles all examples/benchmarks for every target, checks syntax enforcement, and verifies benchmark mode.
 
-```bash
-shelm path/to/equivalent.shlm \
-  --benchmark path/to/reference.pl \
-  --iterations 50 \
-  --host runtime/perl_host_default.pl
-```
+## Documentation
+
+- [LANG_SPEC.md](LANG_SPEC.md) -- normative language spec
+- [docs/NEWCOMER_GUIDE.md](docs/NEWCOMER_GUIDE.md) -- getting started guide
+- [CONFORMANCE_REPORT.md](CONFORMANCE_REPORT.md) -- latest conformance status
+- [DESIGN.md](DESIGN.md) -- project direction and design principles

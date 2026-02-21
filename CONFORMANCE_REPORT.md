@@ -35,5 +35,4 @@ This report validates repository conformance against `LANG_SPEC.md` (implemented
 
 ## Notes
 
-- `LANG_V1.md` and `BYTECODE_V1.md` are retained as directional drafts.
 - `LANG_SPEC.md` is the normative source-level contract for current behavior.

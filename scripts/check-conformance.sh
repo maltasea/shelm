@@ -103,6 +103,32 @@ if ! rg -q '`fn`/`rec fn` are not supported' /tmp/shelm-legacy-fn.out; then
   exit 1
 fi
 
+cat > /tmp/shelm-compact-colon-type.shlm <<'EOF'
+let v = kw:Int
+EOF
+if run_shelm /tmp/shelm-compact-colon-type.shlm --target perl >/tmp/shelm-compact-colon-type.out 2>&1; then
+  echo "Expected compact typed form (name:Type) to be rejected" >&2
+  exit 1
+fi
+if ! rg -q "is not supported" /tmp/shelm-compact-colon-type.out; then
+  echo "Missing expected compact-type rejection message" >&2
+  cat /tmp/shelm-compact-colon-type.out >&2
+  exit 1
+fi
+
+cat > /tmp/shelm-typed-signature.shlm <<'EOF'
+def age : Int = 9
+defun add(x : Int, y : Int) => Int do
+  return x + y
+end
+let f = fun(v : Int) => Int do
+  return v * 2
+end
+println(string_of(add(age, 1)))
+println(string_of(f(3)))
+EOF
+run_shelm /tmp/shelm-typed-signature.shlm --target perl >/tmp/shelm-typed-signature.out
+
 echo "[4/7] Compile all .shlm files to all targets"
 SHLM_FILES=()
 while IFS= read -r path; do
@@ -133,7 +159,7 @@ if ! rg -q "Perl benchmark comparison" /tmp/shelm-bench.out; then
 fi
 
 echo "[7/7] Spec file presence"
-for path in LANG_SPEC.md SYNTAX_SPEC.md scripts/check-conformance.sh test/syntax_tests.ml; do
+for path in LANG_SPEC.md scripts/check-conformance.sh test/syntax_tests.ml; do
   [[ -f "$path" ]] || { echo "Missing required file: $path" >&2; exit 1; }
 done
 
