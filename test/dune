@@ -1,0 +1,7 @@
+(executable
+ (name syntax_tests)
+ (libraries buoy_lib))
+
+(rule
+ (alias runtest)
+ (action (run %{exe:syntax_tests.exe})))

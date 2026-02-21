@@ -114,10 +114,30 @@ let rec of_expr ?meta = function
     mk ?meta "regex_replace" [of_expr ?meta e; str ?meta pat; str ?meta repl; str ?meta flags]
 
 and of_stmt ?meta = function
+  | TypeDef (name, repr) -> mk ?meta "type" [sym ?meta name; of_expr ?meta repr]
+  | EnumDef (name, variants) ->
+    mk ?meta "enum" [
+      sym ?meta name;
+      mk ?meta "variants" (List.map (sym ?meta) variants);
+    ]
   | Let (name, e) -> mk ?meta "let" [sym ?meta name; of_expr ?meta e]
   | Assign (name, e) -> mk ?meta "set" [sym ?meta name; of_expr ?meta e]
   | IndexAssign (target, idx, value) ->
     mk ?meta "set-index" [of_expr ?meta target; of_expr ?meta idx; of_expr ?meta value]
+  | Match (subject, cases) ->
+    let of_pattern = function
+      | PWildcard -> mk ?meta "wildcard" []
+      | PExpr e -> mk ?meta "pattern" [of_expr ?meta e]
+    in
+    let case_nodes =
+      List.map (fun (pattern, body) ->
+        mk ?meta "case" [
+          of_pattern pattern;
+          do_block ?meta (List.map (of_stmt ?meta) body);
+        ]
+      ) cases
+    in
+    mk ?meta "match" [of_expr ?meta subject; mk ?meta "cases" case_nodes]
   | If (cond, then_body, else_body) ->
     mk ?meta "if" [
       of_expr ?meta cond;
@@ -134,6 +154,14 @@ and of_stmt ?meta = function
       mk ?meta "params" (List.map (sym ?meta) params);
       do_block ?meta (List.map (of_stmt ?meta) body);
     ]
+  | RecFnDef (name, params, body) ->
+    mk ?meta "defn-rec" [
+      sym ?meta name;
+      mk ?meta "params" (List.map (sym ?meta) params);
+      do_block ?meta (List.map (of_stmt ?meta) body);
+    ]
+  | Break -> mk ?meta "break" []
+  | Continue -> mk ?meta "continue" []
   | Return e -> mk ?meta "return" [of_expr ?meta e]
   | ExprStmt e -> of_expr ?meta e
 
@@ -274,6 +302,14 @@ let rec expr_of_node (n : node) : (Ast.expr, decode_error) result =
 
 and stmt_of_node (n : node) : (Ast.stmt, decode_error) result =
   match n with
+  | Node ("type", _, [name; repr]) ->
+    let* n' = sym_name "stmt:type-name" name in
+    let* r = expr_of_node repr in
+    Ok (TypeDef (n', r))
+  | Node ("enum", _, [name; Node ("variants", _, variant_nodes)]) ->
+    let* n' = sym_name "stmt:enum-name" name in
+    let* vs = map_results (sym_name "stmt:enum-variant") variant_nodes in
+    Ok (EnumDef (n', vs))
   | Node ("let", _, [name; e]) ->
     let* v = sym_name "stmt:let-name" name in
     let* e' = expr_of_node e in
@@ -287,6 +323,26 @@ and stmt_of_node (n : node) : (Ast.stmt, decode_error) result =
     let* i = expr_of_node idx in
     let* v = expr_of_node value in
     Ok (IndexAssign (t, i, v))
+  | Node ("match", _, [subject; Node ("cases", _, case_nodes)]) ->
+    let decode_case = function
+      | Node ("case", _, [pattern_node; Node ("do", _, body_nodes)]) ->
+        let* p =
+          match pattern_node with
+          | Node ("wildcard", _, []) -> Ok PWildcard
+          | Node ("pattern", _, [e]) ->
+            let* e' = expr_of_node e in
+            Ok (PExpr e')
+          | Node (tag, _, _) ->
+            invalid "stmt:match-pattern" (Printf.sprintf "Expected pattern node, got '%s'" tag)
+        in
+        let* b = map_results stmt_of_node body_nodes in
+        Ok (p, b)
+      | Node (tag, _, _) ->
+        invalid "stmt:match-case" (Printf.sprintf "Expected case node, got '%s'" tag)
+    in
+    let* s = expr_of_node subject in
+    let* cases = map_results decode_case case_nodes in
+    Ok (Match (s, cases))
   | Node ("if", _, [cond; Node ("do", _, then_nodes); Node ("do", _, else_nodes)]) ->
     let* c = expr_of_node cond in
     let* t = map_results stmt_of_node then_nodes in
@@ -306,6 +362,13 @@ and stmt_of_node (n : node) : (Ast.stmt, decode_error) result =
     let* ps = map_results (sym_name "stmt:defn-param") params in
     let* b = map_results stmt_of_node body_nodes in
     Ok (FnDef (n', ps, b))
+  | Node ("defn-rec", _, [name; Node ("params", _, params); Node ("do", _, body_nodes)]) ->
+    let* n' = sym_name "stmt:defn-rec-name" name in
+    let* ps = map_results (sym_name "stmt:defn-rec-param") params in
+    let* b = map_results stmt_of_node body_nodes in
+    Ok (RecFnDef (n', ps, b))
+  | Node ("break", _, []) -> Ok Break
+  | Node ("continue", _, []) -> Ok Continue
   | Node ("return", _, [e]) ->
     let* e' = expr_of_node e in
     Ok (Return e')

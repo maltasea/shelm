@@ -34,6 +34,24 @@ let strip_trailing_keyword s kw =
   else
     None
 
+let strip_trailing_colon s =
+  let t = trim s in
+  let n = String.length t in
+  if n > 0 && t.[n - 1] = ':' then
+    Some (trim (String.sub t 0 (n - 1)))
+  else
+    None
+
+let strip_trailing_block_opener s =
+  let t = trim s in
+  let n = String.length t in
+  if n > 0 && t.[n - 1] = '{' then
+    Some (trim (String.sub t 0 (n - 1)))
+  else
+    match strip_trailing_colon t with
+    | Some h -> Some h
+    | None -> strip_trailing_keyword t "do"
+
 let starts_with_keyword s kw =
   let n = String.length kw in
   String.length s >= n
@@ -125,8 +143,169 @@ let normalize_regex_literals s =
   loop 0;
   Buffer.contents b
 
+let is_host_ident_start = function
+  | 'a' .. 'z' | 'A' .. 'Z' | '_' -> true
+  | _ -> false
+
+let is_host_ident_char = function
+  | 'a' .. 'z' | 'A' .. 'Z' | '0' .. '9' | '_' | '-' | '?' -> true
+  | _ -> false
+
+let read_host_ident_end s i =
+  let len = String.length s in
+  if i >= len || not (is_host_ident_start s.[i]) then None
+  else
+    let rec loop j =
+      if j < len && is_host_ident_char s.[j] then loop (j + 1) else j
+    in
+    Some (loop (i + 1))
+
+let read_host_path s i =
+  let len = String.length s in
+  match read_host_ident_end s i with
+  | None -> None
+  | Some first_end ->
+    let j = ref first_end in
+    let valid = ref true in
+    while !valid && !j < len && s.[!j] = '/' do
+      match read_host_ident_end s (!j + 1) with
+      | None -> valid := false
+      | Some next_end -> j := next_end
+    done;
+    if not !valid then None
+    else Some (String.sub s i (!j - i), !j)
+
+let find_matching_paren s open_i =
+  let len = String.length s in
+  let rec loop i parens braces brackets in_string escaped =
+    if i >= len then None
+    else
+      let c = s.[i] in
+      if in_string then
+        if escaped then loop (i + 1) parens braces brackets true false
+        else if c = '\\' then loop (i + 1) parens braces brackets true true
+        else if c = '"' then loop (i + 1) parens braces brackets false false
+        else loop (i + 1) parens braces brackets true false
+      else
+        match c with
+        | '"' -> loop (i + 1) parens braces brackets true false
+        | '(' ->
+          if i = open_i then loop (i + 1) 1 braces brackets false false
+          else loop (i + 1) (parens + 1) braces brackets false false
+        | ')' ->
+          if parens = 1 then Some i
+          else loop (i + 1) (max 0 (parens - 1)) braces brackets false false
+        | '{' -> loop (i + 1) parens (braces + 1) brackets false false
+        | '}' -> loop (i + 1) parens (max 0 (braces - 1)) brackets false false
+        | '[' -> loop (i + 1) parens braces (brackets + 1) false false
+        | ']' -> loop (i + 1) parens braces (max 0 (brackets - 1)) false false
+        | _ -> loop (i + 1) parens braces brackets false false
+  in
+  if open_i < 0 || open_i >= len || s.[open_i] <> '(' then None
+  else loop open_i 0 0 0 false false
+
+let find_ffi_tail_end s start_i =
+  let len = String.length s in
+  let rec loop i parens braces brackets in_string escaped =
+    if i >= len then len
+    else
+      let c = s.[i] in
+      if in_string then
+        if escaped then loop (i + 1) parens braces brackets true false
+        else if c = '\\' then loop (i + 1) parens braces brackets true true
+        else if c = '"' then loop (i + 1) parens braces brackets false false
+        else loop (i + 1) parens braces brackets true false
+      else
+        match c with
+        | '"' -> loop (i + 1) parens braces brackets true false
+        | '(' -> loop (i + 1) (parens + 1) braces brackets false false
+        | ')' when parens = 0 && braces = 0 && brackets = 0 -> i
+        | ')' -> loop (i + 1) (max 0 (parens - 1)) braces brackets false false
+        | '{' -> loop (i + 1) parens (braces + 1) brackets false false
+        | '}' when parens = 0 && braces = 0 && brackets = 0 -> i
+        | '}' -> loop (i + 1) parens (max 0 (braces - 1)) brackets false false
+        | '[' -> loop (i + 1) parens braces (brackets + 1) false false
+        | ']' when parens = 0 && braces = 0 && brackets = 0 -> i
+        | ']' -> loop (i + 1) parens braces (max 0 (brackets - 1)) false false
+        | ',' when parens = 0 && braces = 0 && brackets = 0 -> i
+        | _ -> loop (i + 1) parens braces brackets false false
+  in
+  loop start_i 0 0 0 false false
+
+let rec rewrite_ffi_expr s =
+  let len = String.length s in
+  let b = Buffer.create len in
+  let rec skip_spaces j =
+    if j < len && is_space s.[j] then skip_spaces (j + 1) else j
+  in
+  let rec loop i in_string escaped =
+    if i >= len then ()
+    else
+      let c = s.[i] in
+      if in_string then begin
+        Buffer.add_char b c;
+        if escaped then loop (i + 1) true false
+        else if c = '\\' then loop (i + 1) true true
+        else if c = '"' then loop (i + 1) false false
+        else loop (i + 1) true false
+      end else
+        match c with
+        | '"' ->
+          Buffer.add_char b c;
+          loop (i + 1) true false
+        | '$' ->
+          begin match read_host_path s (i + 1) with
+          | Some (path, next_i) ->
+            Buffer.add_string b (Printf.sprintf "host_get(%S)" path);
+            loop next_i false false
+          | None ->
+            Buffer.add_char b c;
+            loop (i + 1) false false
+          end
+        | '&' ->
+          begin match read_host_path s (i + 1) with
+          | None ->
+            Buffer.add_char b c;
+            loop (i + 1) false false
+          | Some (path, path_end) ->
+            let after_path = skip_spaces path_end in
+            if after_path < len && s.[after_path] = '(' then begin
+              match find_matching_paren s after_path with
+              | Some close_i ->
+                let inner = String.sub s (after_path + 1) (close_i - after_path - 1) in
+                let inner = trim (rewrite_ffi_expr inner) in
+                if inner = "" then
+                  Buffer.add_string b (Printf.sprintf "host_call(%S)" path)
+                else
+                  Buffer.add_string b (Printf.sprintf "host_call(%S, %s)" path inner);
+                loop (close_i + 1) false false
+              | None ->
+                Buffer.add_char b c;
+                loop (i + 1) false false
+            end else begin
+              let tail_end = find_ffi_tail_end s after_path in
+              let raw_tail =
+                if tail_end > after_path
+                then String.sub s after_path (tail_end - after_path)
+                else ""
+              in
+              let tail = trim (rewrite_ffi_expr raw_tail) in
+              if tail = "" then
+                Buffer.add_string b (Printf.sprintf "host_call(%S)" path)
+              else
+                Buffer.add_string b (Printf.sprintf "host_call(%S, %s)" path tail);
+              loop tail_end false false
+            end
+          end
+        | _ ->
+          Buffer.add_char b c;
+          loop (i + 1) false false
+  in
+  loop 0 false false;
+  Buffer.contents b
+
 let rec normalize_expr s =
-  let s = normalize_regex_literals (trim s) in
+  let s = rewrite_ffi_expr (normalize_regex_literals (trim s)) in
   if s = "" then s
   else
     match strip_outer_parens s with
@@ -147,12 +326,15 @@ and normalize_call_form s =
     in
     let sym_end = read_sym 1 in
     let head = String.sub s 0 sym_end in
-    if head = "if" || head = "else" || head = "while" || head = "for" || head = "let"
-       || head = "fn" || head = "return" then None
+    if head = "if" || head = "else" || head = "while" || head = "for" || head = "foreach"
+       || head = "let" || head = "fn" || head = "rec" || head = "return" || head = "unless"
+       || head = "match" || head = "case" || head = "enum" || head = "type"
+       || head = "break" || head = "continue" then None
     else
       let rest = trim (String.sub s sym_end (len - sym_end)) in
       if rest = "" then None
       else if is_operator_prefix rest.[0] then None
+      else if rest.[0] = '[' || rest.[0] = '{' then None
       else
         let args =
           if rest.[0] = '(' then
@@ -179,26 +361,22 @@ let normalize_if_like prefix line =
   let p = String.length prefix in
   if String.length line >= p + 1 && String.sub line 0 p = prefix then
     let rest = trim (String.sub line p (String.length line - p)) in
-    if rest <> "" && rest.[String.length rest - 1] = '{' then
-      let cond = trim (String.sub rest 0 (String.length rest - 1)) in
-      Some (prefix ^ normalize_expr cond ^ " {")
-    else begin
-      match strip_trailing_keyword rest "do" with
-      | Some cond -> Some (prefix ^ normalize_expr cond ^ " {")
-      | None -> None
-    end
+    match strip_trailing_block_opener rest with
+    | Some cond -> Some (prefix ^ normalize_expr cond ^ " {")
+    | None -> None
   else None
 
 let normalize_for line =
-  if not (starts_with_keyword line "for") then None
-  else
-    let rest = trim (String.sub line 3 (String.length line - 3)) in
-    let inner_opt =
-      if rest <> "" && rest.[String.length rest - 1] = '{' then
-        Some (trim (String.sub rest 0 (String.length rest - 1)))
-      else
-        strip_trailing_keyword rest "do"
-    in
+  let prefix_len =
+    if starts_with_keyword line "for" then Some 3
+    else if starts_with_keyword line "foreach" then Some 7
+    else None
+  in
+  match prefix_len with
+  | None -> None
+  | Some p ->
+    let rest = trim (String.sub line p (String.length line - p)) in
+    let inner_opt = strip_trailing_block_opener rest in
     match inner_opt with
     | None -> None
     | Some inner ->
@@ -213,18 +391,49 @@ let normalize_for line =
           Some (Printf.sprintf "for %s in %s {" name (normalize_expr iter_expr))
 
 let normalize_fn_header line =
-  if not (starts_with_keyword line "fn") then None
+  let t = trim line in
+  let is_fn_header =
+    starts_with_keyword t "fn"
+    || (
+      starts_with_keyword t "rec"
+      && let rest = trim (String.sub t 3 (String.length t - 3)) in
+         starts_with_keyword rest "fn"
+    )
+  in
+  if not is_fn_header then None
   else
-    let t = trim line in
-    if t <> "" && t.[String.length t - 1] = '{' then Some t
-    else
-      match strip_trailing_keyword t "do" with
-      | Some body_head -> Some (body_head ^ " {")
-      | None -> None
+    match strip_trailing_block_opener t with
+    | Some body_head -> Some (body_head ^ " {")
+    | None -> None
+
+let normalize_unless line =
+  if not (starts_with_keyword line "unless") then None
+  else
+    let rest = trim (String.sub line 6 (String.length line - 6)) in
+    let mk cond = Printf.sprintf "if not (%s) {" (normalize_expr cond) in
+    match strip_trailing_block_opener rest with
+    | Some cond -> Some (mk cond)
+    | None -> None
+
+let normalize_match_line line =
+  if starts_with_keyword line "match" then
+    let rest = trim (String.sub line 5 (String.length line - 5)) in
+    match strip_trailing_block_opener rest with
+    | Some subject -> Some (Printf.sprintf "match %s {" (normalize_expr subject))
+    | None -> None
+  else None
+
+let normalize_case_line line =
+  if starts_with_keyword line "case" then
+    let rest = trim (String.sub line 4 (String.length line - 4)) in
+    match strip_trailing_block_opener rest with
+    | Some pattern -> Some (Printf.sprintf "case %s {" (normalize_expr pattern))
+    | None -> None
+  else None
 
 let normalize_else_line line =
   let t = trim line in
-  if t = "else {" || t = "else do" then Some "} else {"
+  if t = "else {" || t = "else do" || t = "else:" then Some "} else {"
   else if starts_with_keyword t "else if" then
     let rest = trim (String.sub t 4 (String.length t - 4)) in
     let cond_tail =
@@ -233,14 +442,160 @@ let normalize_else_line line =
       else
         rest
     in
-    if cond_tail <> "" && cond_tail.[String.length cond_tail - 1] = '{' then
-      let cond = trim (String.sub cond_tail 0 (String.length cond_tail - 1)) in
-      Some (Printf.sprintf "} else if %s {" (normalize_expr cond))
-    else
-      match strip_trailing_keyword cond_tail "do" with
-      | Some cond -> Some (Printf.sprintf "} else if %s {" (normalize_expr cond))
-      | None -> None
+    match strip_trailing_block_opener cond_tail with
+    | Some cond -> Some (Printf.sprintf "} else if %s {" (normalize_expr cond))
+    | None -> None
   else None
+
+let find_top_level_arrow s =
+  let len = String.length s in
+  let rec loop i parens braces brackets in_string escaped =
+    if i + 1 >= len then None
+    else
+      let c = s.[i] in
+      if in_string then
+        if escaped then loop (i + 1) parens braces brackets true false
+        else if c = '\\' then loop (i + 1) parens braces brackets true true
+        else if c = '"' then loop (i + 1) parens braces brackets false false
+        else loop (i + 1) parens braces brackets true false
+      else
+        match c with
+        | '"' -> loop (i + 1) parens braces brackets true false
+        | '(' -> loop (i + 1) (parens + 1) braces brackets false false
+        | ')' -> loop (i + 1) (max 0 (parens - 1)) braces brackets false false
+        | '{' -> loop (i + 1) parens (braces + 1) brackets false false
+        | '}' -> loop (i + 1) parens (max 0 (braces - 1)) brackets false false
+        | '[' -> loop (i + 1) parens braces (brackets + 1) false false
+        | ']' -> loop (i + 1) parens braces (max 0 (brackets - 1)) false false
+        | '-' when s.[i + 1] = '>' && parens = 0 && braces = 0 && brackets = 0 -> Some i
+        | _ -> loop (i + 1) parens braces brackets false false
+  in
+  loop 0 0 0 0 false false
+
+type keyword_block_frame =
+  | Regular_block
+  | Match_block of bool ref
+
+let rewrite_keyword_blocks (lines : string list) : string list =
+  let stack : keyword_block_frame list ref = ref [] in
+  let open_regular line acc =
+    stack := Regular_block :: !stack;
+    line :: acc
+  in
+  let open_match line acc =
+    stack := Match_block (ref false) :: !stack;
+    line :: acc
+  in
+  let close_end acc =
+    match !stack with
+    | Match_block case_open :: rest ->
+      stack := rest;
+      if !case_open then "}" :: "}" :: acc else "}" :: acc
+    | Regular_block :: rest ->
+      stack := rest;
+      "}" :: acc
+    | [] ->
+      "end" :: acc
+  in
+  let rec loop acc = function
+    | [] -> List.rev acc
+    | line :: rest ->
+      let t = trim line in
+      if t = "" || (String.length t > 0 && t.[0] = '#') then
+        loop (line :: acc) rest
+      else if t = "end" then
+        loop (close_end acc) rest
+      else if starts_with_keyword t "if" then
+        let tail = trim (String.sub t 2 (String.length t - 2)) in
+        let cond_opt =
+          match strip_trailing_keyword tail "then" with
+          | Some c -> Some c
+          | None -> strip_trailing_keyword tail "do"
+        in
+        begin match cond_opt with
+        | Some cond ->
+          loop (open_regular (Printf.sprintf "if %s {" (normalize_expr cond)) acc) rest
+        | None ->
+          loop (line :: acc) rest
+        end
+      else if starts_with_keyword t "elif" then
+        let tail = trim (String.sub t 4 (String.length t - 4)) in
+        let cond_opt =
+          match strip_trailing_keyword tail "then" with
+          | Some c -> Some c
+          | None -> strip_trailing_keyword tail "do"
+        in
+        begin match cond_opt with
+        | Some cond ->
+          loop ((Printf.sprintf "} else if %s {" (normalize_expr cond)) :: acc) rest
+        | None ->
+          loop (line :: acc) rest
+        end
+      else if t = "else" then
+        loop ("} else {" :: acc) rest
+      else if starts_with_keyword t "while" then
+        let tail = trim (String.sub t 5 (String.length t - 5)) in
+        begin match strip_trailing_keyword tail "do" with
+        | Some cond ->
+          loop (open_regular (Printf.sprintf "while %s {" (normalize_expr cond)) acc) rest
+        | None ->
+          loop (line :: acc) rest
+        end
+      else if starts_with_keyword t "for" || starts_with_keyword t "foreach" then
+        begin match normalize_for t with
+        | Some normalized when String.length normalized > 0
+                              && normalized.[String.length normalized - 1] = '{' ->
+          loop (open_regular normalized acc) rest
+        | _ ->
+          loop (line :: acc) rest
+        end
+      else if starts_with_keyword t "fn"
+           || (starts_with_keyword t "rec"
+               && let r = trim (String.sub t 3 (String.length t - 3)) in starts_with_keyword r "fn") then
+        begin match normalize_fn_header t with
+        | Some normalized when String.length normalized > 0
+                              && normalized.[String.length normalized - 1] = '{' ->
+          loop (open_regular normalized acc) rest
+        | _ ->
+          loop (line :: acc) rest
+        end
+      else if starts_with_keyword t "match" then
+        let tail = trim (String.sub t 5 (String.length t - 5)) in
+        begin match strip_trailing_keyword tail "with" with
+        | Some subject ->
+          loop (open_match (Printf.sprintf "match %s {" (normalize_expr subject)) acc) rest
+        | None ->
+          loop (line :: acc) rest
+        end
+      else if String.length t > 0 && t.[0] = '|' then
+        begin
+          match !stack with
+          | Match_block case_open :: _ ->
+            let rhs_line =
+              match find_top_level_arrow t with
+              | Some arrow_i ->
+                let raw_pat = trim (String.sub t 1 (arrow_i - 1)) in
+                let raw_rhs = trim (String.sub t (arrow_i + 2) (String.length t - arrow_i - 2)) in
+                let pat = normalize_expr raw_pat in
+                let prefix = if !case_open then ["}"] else [] in
+                if raw_rhs = "" then begin
+                  case_open := true;
+                  prefix @ [Printf.sprintf "case %s {" pat]
+                end else begin
+                  case_open := false;
+                  prefix @ [Printf.sprintf "case %s { %s }" pat (normalize_expr raw_rhs)]
+                end
+              | None ->
+                [line]
+            in
+            loop (List.rev_append rhs_line acc) rest
+          | _ ->
+            loop (line :: acc) rest
+        end
+      else
+        loop (line :: acc) rest
+  in
+  loop [] lines
 
 let normalize_line line =
   let t = trim line in
@@ -255,6 +610,22 @@ let normalize_line line =
         match normalize_fn_header t with
         | Some x -> x
         | None ->
+          begin
+            match normalize_unless t with
+            | Some x -> x
+            | None ->
+          begin
+            match normalize_match_line t with
+            | Some x -> x
+            | None ->
+          begin
+            match normalize_case_line t with
+            | Some x -> x
+            | None ->
+          begin
+            match normalize_for t with
+            | Some x -> x
+            | None ->
           if ends_with_keyword t "do" then
             normalize_expr (match strip_trailing_keyword t "do" with Some h -> h | None -> t) ^ " {"
           else
@@ -291,8 +662,47 @@ let normalize_line line =
                     end
                 end
             end
+          end
+          end
+          end
+          end
       end
 
-let rewrite_source (source : string) : string =
+let uses_do_end_syntax line =
+  let t = trim line in
+  (starts_with_keyword t "if" && ends_with_keyword t "do")
+  || (starts_with_keyword t "elif" && ends_with_keyword t "do")
+  || (starts_with_keyword t "else if" && ends_with_keyword t "do")
+  || t = "else do"
+  || (starts_with_keyword t "unless" && ends_with_keyword t "do")
+
+let collect_do_end_lines lines =
+  let rec loop i acc = function
+    | [] -> List.rev acc
+    | line :: rest ->
+      if uses_do_end_syntax line then
+        loop (i + 1) (i :: acc) rest
+      else
+        loop (i + 1) acc rest
+  in
+  loop 1 [] lines
+
+let warn_do_end_deprecated ?(module_name = "") lines =
+  if lines <> [] then
+    let prefix =
+      if module_name = "" then
+        ""
+      else
+        module_name ^ ": "
+    in
+    let line_list = String.concat ", " (List.map string_of_int lines) in
+    prerr_endline
+      (Printf.sprintf
+         "Warning: %sdo/end block syntax is deprecated; use if ... then ... end (line(s): %s)."
+         prefix line_list)
+
+let rewrite_source ?(module_name = "") (source : string) : string =
   let lines = String.split_on_char '\n' source in
+  warn_do_end_deprecated ~module_name (collect_do_end_lines lines);
+  let lines = rewrite_keyword_blocks lines in
   String.concat "\n" (List.map normalize_line lines)

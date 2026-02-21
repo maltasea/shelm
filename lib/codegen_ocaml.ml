@@ -2,6 +2,8 @@ open Ast
 
 let buf = Buffer.create 4096
 let indent_level = ref 0
+let temp_counter = ref 0
+let loop_depth = ref 0
 
 let emit s = Buffer.add_string buf s
 let emitln s =
@@ -13,6 +15,23 @@ let indent f =
   incr indent_level;
   f ();
   decr indent_level
+
+let fresh_temp prefix =
+  incr temp_counter;
+  Printf.sprintf "__%s_%d" prefix !temp_counter
+
+let rec lower_match_to_if scrutinee = function
+  | [] -> ExprStmt Nil
+  | (pattern, body) :: rest ->
+    let cond = match pattern with
+      | PWildcard -> BoolLit true
+      | PExpr e -> BinOp (Eq, Var scrutinee, e)
+    in
+    let else_body = match rest with
+      | [] -> []
+      | _ -> [lower_match_to_if scrutinee rest]
+    in
+    If (cond, body, else_body)
 
 let ocaml_escape_string s =
   let b = Buffer.create (String.length s) in
@@ -224,12 +243,26 @@ and gen_stmts_returning stmts =
     s ^ "  VNil\n"
 
 and gen_stmt = function
+  | TypeDef (_name, _repr) ->
+    ()
+  | EnumDef (_name, variants) ->
+    List.iteri (fun i variant ->
+      emitln (Printf.sprintf "let %s = ref (VInt %d) in" variant i)
+    ) variants
   | Let (name, e) ->
     emitln (Printf.sprintf "let %s = ref (%s) in" name (gen_expr e))
   | Assign (name, e) ->
     emitln (Printf.sprintf "%s := %s;" name (gen_expr e))
   | IndexAssign (e, idx, v) ->
     emitln (Printf.sprintf "val_index_assign (%s) (%s) (%s);" (gen_expr e) (gen_expr idx) (gen_expr v))
+  | Match (subject, cases) ->
+    let slot = fresh_temp "match" in
+    gen_stmt (Let (slot, subject));
+    begin
+      match cases with
+      | [] -> ()
+      | _ -> gen_stmt (lower_match_to_if slot cases)
+    end
   | If (cond, then_body, []) ->
     emitln (Printf.sprintf "if val_truthy (%s) then begin" (gen_expr cond));
     indent (fun () -> List.iter gen_stmt then_body);
@@ -241,17 +274,55 @@ and gen_stmt = function
     indent (fun () -> List.iter gen_stmt else_body);
     emitln "end;"
   | While (cond, body) ->
-    emitln (Printf.sprintf "while val_truthy (%s) do" (gen_expr cond));
-    indent (fun () -> List.iter gen_stmt body);
-    emitln "done;"
-  | For (name, e, body) ->
-    emitln (Printf.sprintf "val_iter (%s) (fun _item ->" (gen_expr e));
+    emitln "(try";
     indent (fun () ->
-      emitln (Printf.sprintf "let %s = ref _item in" name);
-      List.iter gen_stmt body
+      emitln (Printf.sprintf "while val_truthy (%s) do" (gen_expr cond));
+      indent (fun () ->
+        emitln "try";
+        incr loop_depth;
+        indent (fun () -> List.iter gen_stmt body);
+        decr loop_depth;
+        emitln "with BuoyContinue -> ()"
+      );
+      emitln "done"
     );
-    emitln ");"
+    emitln "with BuoyBreak -> ());"
+  | For (name, e, body) ->
+    emitln "(try";
+    indent (fun () ->
+      emitln (Printf.sprintf "val_iter (%s) (fun _item ->" (gen_expr e));
+      indent (fun () ->
+        emitln "try";
+        indent (fun () ->
+          emitln (Printf.sprintf "let %s = ref _item in" name);
+          incr loop_depth;
+          List.iter gen_stmt body;
+          decr loop_depth
+        );
+        emitln "with BuoyContinue -> ()"
+      );
+      emitln ")"
+    );
+    emitln "with BuoyBreak -> ());"
+  | Break ->
+    if !loop_depth > 0 then
+      emitln "raise BuoyBreak;"
+    else
+      emitln "failwith \"break used outside of loop\";"
+  | Continue ->
+    if !loop_depth > 0 then
+      emitln "raise BuoyContinue;"
+    else
+      emitln "failwith \"continue used outside of loop\";"
   | FnDef (name, params, body) ->
+    let param_binds = List.mapi (fun i p ->
+      Printf.sprintf "let %s = ref (List.nth _args %d) in" p i
+    ) params in
+    let body_str = gen_stmts_returning body in
+    emitln (Printf.sprintf "let %s = ref (VFunc (fun _args -> %s" name (String.concat " " param_binds));
+    emit body_str;
+    emitln ")) in"
+  | RecFnDef (name, params, body) ->
     let param_binds = List.mapi (fun i p ->
       Printf.sprintf "let %s = ref (List.nth _args %d) in" p i
     ) params in
@@ -294,6 +365,9 @@ type value =
   | VChannel of in_channel * out_channel option
   | VRegex of string * string
   | VFuture of (unit -> value) * value option ref
+
+exception BuoyBreak
+exception BuoyContinue
 
 let val_truthy = function
   | VBool false | VNil | VInt 0 -> false
@@ -699,6 +773,8 @@ let () =
 let generate (program : Ast.program) : string =
   Buffer.clear buf;
   indent_level := 0;
+  temp_counter := 0;
+  loop_depth := 0;
   emit runtime;
   List.iter gen_stmt program;
   emitln "()";

@@ -1,0 +1,2480 @@
+State 0:
+## Known stack suffix:
+##
+## LR(1) items:
+program' -> . program [ # ]
+## Transitions:
+-- On sep_lines shift to state 1
+-- On program shift to state 153
+## Reductions:
+-- On WHILE TRUE STRING RETURN REGEX REC NOT NIL NEWLINE MINUS LPAREN LET LBRACKET LBRACE INT IF IDENT FOR FN FLOAT FALSE EOF
+--   reduce production sep_lines ->
+
+State 1:
+## Known stack suffix:
+## sep_lines
+## LR(1) items:
+program -> sep_lines . terminated_stmts EOF [ # ]
+sep_lines -> sep_lines . NEWLINE [ WHILE TRUE STRING RETURN REGEX REC NOT NIL NEWLINE MINUS LPAREN LET LBRACKET LBRACE INT IF IDENT FOR FN FLOAT FALSE EOF ]
+## Transitions:
+-- On WHILE shift to state 2
+-- On TRUE shift to state 3
+-- On STRING shift to state 4
+-- On RETURN shift to state 23
+-- On REGEX shift to state 5
+-- On REC shift to state 78
+-- On NOT shift to state 6
+-- On NIL shift to state 7
+-- On NEWLINE shift to state 85
+-- On MINUS shift to state 8
+-- On LPAREN shift to state 9
+-- On LET shift to state 86
+-- On LBRACKET shift to state 10
+-- On LBRACE shift to state 11
+-- On INT shift to state 12
+-- On IF shift to state 90
+-- On IDENT shift to state 102
+-- On FOR shift to state 105
+-- On FN shift to state 110
+-- On FLOAT shift to state 24
+-- On FALSE shift to state 25
+-- On unary_expr shift to state 26
+-- On terminated_stmts shift to state 151
+-- On stmt shift to state 118
+-- On primary_expr shift to state 27
+-- On postfix_expr shift to state 124
+-- On or_expr shift to state 30
+-- On mul_expr shift to state 32
+-- On match_expr shift to state 39
+-- On expr shift to state 131
+-- On concat_expr shift to state 44
+-- On cmp_expr shift to state 47
+-- On and_expr shift to state 71
+-- On add_expr shift to state 50
+## Reductions:
+-- On EOF
+--   reduce production terminated_stmts ->
+
+State 2:
+## Known stack suffix:
+## WHILE
+## LR(1) items:
+stmt -> WHILE . expr block [ RBRACE NEWLINE EOF ]
+## Transitions:
+-- On TRUE shift to state 3
+-- On STRING shift to state 4
+-- On REGEX shift to state 5
+-- On NOT shift to state 6
+-- On NIL shift to state 7
+-- On MINUS shift to state 8
+-- On LPAREN shift to state 9
+-- On LBRACKET shift to state 10
+-- On LBRACE shift to state 11
+-- On INT shift to state 12
+-- On IDENT shift to state 13
+-- On FN shift to state 14
+-- On FLOAT shift to state 24
+-- On FALSE shift to state 25
+-- On unary_expr shift to state 26
+-- On primary_expr shift to state 27
+-- On postfix_expr shift to state 28
+-- On or_expr shift to state 30
+-- On mul_expr shift to state 32
+-- On match_expr shift to state 39
+-- On expr shift to state 149
+-- On concat_expr shift to state 44
+-- On cmp_expr shift to state 47
+-- On and_expr shift to state 71
+-- On add_expr shift to state 50
+## Reductions:
+
+State 3:
+## Known stack suffix:
+## TRUE
+## LR(1) items:
+primary_expr -> TRUE . [ STAR SLASH RPAREN REGEX_REPLACE RBRACKET RBRACE PLUSPLUS PLUS PERCENT OR NOT_MATCH_OP NEWLINE NEQ MINUS MATCH_OP LT LPAREN LE LBRACKET LBRACE GT GE EQEQ EOF COMMA COLON AND ]
+## Transitions:
+## Reductions:
+-- On STAR SLASH RPAREN REGEX_REPLACE RBRACKET RBRACE PLUSPLUS PLUS PERCENT OR NOT_MATCH_OP NEWLINE NEQ MINUS MATCH_OP LT LPAREN LE LBRACKET LBRACE GT GE EQEQ EOF COMMA COLON AND
+--   reduce production primary_expr -> TRUE
+
+State 4:
+## Known stack suffix:
+## STRING
+## LR(1) items:
+primary_expr -> STRING . [ STAR SLASH RPAREN REGEX_REPLACE RBRACKET RBRACE PLUSPLUS PLUS PERCENT OR NOT_MATCH_OP NEWLINE NEQ MINUS MATCH_OP LT LPAREN LE LBRACKET LBRACE GT GE EQEQ EOF COMMA COLON AND ]
+## Transitions:
+## Reductions:
+-- On STAR SLASH RPAREN REGEX_REPLACE RBRACKET RBRACE PLUSPLUS PLUS PERCENT OR NOT_MATCH_OP NEWLINE NEQ MINUS MATCH_OP LT LPAREN LE LBRACKET LBRACE GT GE EQEQ EOF COMMA COLON AND
+--   reduce production primary_expr -> STRING
+
+State 5:
+## Known stack suffix:
+## REGEX
+## LR(1) items:
+primary_expr -> REGEX . [ STAR SLASH RPAREN REGEX_REPLACE RBRACKET RBRACE PLUSPLUS PLUS PERCENT OR NOT_MATCH_OP NEWLINE NEQ MINUS MATCH_OP LT LPAREN LE LBRACKET LBRACE GT GE EQEQ EOF COMMA COLON AND ]
+## Transitions:
+## Reductions:
+-- On STAR SLASH RPAREN REGEX_REPLACE RBRACKET RBRACE PLUSPLUS PLUS PERCENT OR NOT_MATCH_OP NEWLINE NEQ MINUS MATCH_OP LT LPAREN LE LBRACKET LBRACE GT GE EQEQ EOF COMMA COLON AND
+--   reduce production primary_expr -> REGEX
+
+State 6:
+## Known stack suffix:
+## NOT
+## LR(1) items:
+unary_expr -> NOT . unary_expr [ STAR SLASH RPAREN RBRACKET RBRACE PLUSPLUS PLUS PERCENT OR NOT_MATCH_OP NEWLINE NEQ MINUS MATCH_OP LT LE LBRACE GT GE EQEQ EOF COMMA COLON AND ]
+## Transitions:
+-- On TRUE shift to state 3
+-- On STRING shift to state 4
+-- On REGEX shift to state 5
+-- On NOT shift to state 6
+-- On NIL shift to state 7
+-- On MINUS shift to state 8
+-- On LPAREN shift to state 9
+-- On LBRACKET shift to state 10
+-- On LBRACE shift to state 11
+-- On INT shift to state 12
+-- On IDENT shift to state 13
+-- On FN shift to state 14
+-- On FLOAT shift to state 24
+-- On FALSE shift to state 25
+-- On unary_expr shift to state 148
+-- On primary_expr shift to state 27
+-- On postfix_expr shift to state 28
+## Reductions:
+
+State 7:
+## Known stack suffix:
+## NIL
+## LR(1) items:
+primary_expr -> NIL . [ STAR SLASH RPAREN REGEX_REPLACE RBRACKET RBRACE PLUSPLUS PLUS PERCENT OR NOT_MATCH_OP NEWLINE NEQ MINUS MATCH_OP LT LPAREN LE LBRACKET LBRACE GT GE EQEQ EOF COMMA COLON AND ]
+## Transitions:
+## Reductions:
+-- On STAR SLASH RPAREN REGEX_REPLACE RBRACKET RBRACE PLUSPLUS PLUS PERCENT OR NOT_MATCH_OP NEWLINE NEQ MINUS MATCH_OP LT LPAREN LE LBRACKET LBRACE GT GE EQEQ EOF COMMA COLON AND
+--   reduce production primary_expr -> NIL
+
+State 8:
+## Known stack suffix:
+## MINUS
+## LR(1) items:
+unary_expr -> MINUS . unary_expr [ STAR SLASH RPAREN RBRACKET RBRACE PLUSPLUS PLUS PERCENT OR NOT_MATCH_OP NEWLINE NEQ MINUS MATCH_OP LT LE LBRACE GT GE EQEQ EOF COMMA COLON AND ]
+## Transitions:
+-- On TRUE shift to state 3
+-- On STRING shift to state 4
+-- On REGEX shift to state 5
+-- On NOT shift to state 6
+-- On NIL shift to state 7
+-- On MINUS shift to state 8
+-- On LPAREN shift to state 9
+-- On LBRACKET shift to state 10
+-- On LBRACE shift to state 11
+-- On INT shift to state 12
+-- On IDENT shift to state 13
+-- On FN shift to state 14
+-- On FLOAT shift to state 24
+-- On FALSE shift to state 25
+-- On unary_expr shift to state 147
+-- On primary_expr shift to state 27
+-- On postfix_expr shift to state 28
+## Reductions:
+
+State 9:
+## Known stack suffix:
+## LPAREN
+## LR(1) items:
+primary_expr -> LPAREN . expr RPAREN [ STAR SLASH RPAREN REGEX_REPLACE RBRACKET RBRACE PLUSPLUS PLUS PERCENT OR NOT_MATCH_OP NEWLINE NEQ MINUS MATCH_OP LT LPAREN LE LBRACKET LBRACE GT GE EQEQ EOF COMMA COLON AND ]
+## Transitions:
+-- On TRUE shift to state 3
+-- On STRING shift to state 4
+-- On REGEX shift to state 5
+-- On NOT shift to state 6
+-- On NIL shift to state 7
+-- On MINUS shift to state 8
+-- On LPAREN shift to state 9
+-- On LBRACKET shift to state 10
+-- On LBRACE shift to state 11
+-- On INT shift to state 12
+-- On IDENT shift to state 13
+-- On FN shift to state 14
+-- On FLOAT shift to state 24
+-- On FALSE shift to state 25
+-- On unary_expr shift to state 26
+-- On primary_expr shift to state 27
+-- On postfix_expr shift to state 28
+-- On or_expr shift to state 30
+-- On mul_expr shift to state 32
+-- On match_expr shift to state 39
+-- On expr shift to state 145
+-- On concat_expr shift to state 44
+-- On cmp_expr shift to state 47
+-- On and_expr shift to state 71
+-- On add_expr shift to state 50
+## Reductions:
+
+State 10:
+## Known stack suffix:
+## LBRACKET
+## LR(1) items:
+primary_expr -> LBRACKET . array_elems RBRACKET [ STAR SLASH RPAREN REGEX_REPLACE RBRACKET RBRACE PLUSPLUS PLUS PERCENT OR NOT_MATCH_OP NEWLINE NEQ MINUS MATCH_OP LT LPAREN LE LBRACKET LBRACE GT GE EQEQ EOF COMMA COLON AND ]
+## Transitions:
+-- On TRUE shift to state 3
+-- On STRING shift to state 4
+-- On REGEX shift to state 5
+-- On NOT shift to state 6
+-- On NIL shift to state 7
+-- On MINUS shift to state 8
+-- On LPAREN shift to state 9
+-- On LBRACKET shift to state 10
+-- On LBRACE shift to state 11
+-- On INT shift to state 12
+-- On IDENT shift to state 13
+-- On FN shift to state 14
+-- On FLOAT shift to state 24
+-- On FALSE shift to state 25
+-- On unary_expr shift to state 26
+-- On primary_expr shift to state 27
+-- On postfix_expr shift to state 28
+-- On or_expr shift to state 30
+-- On mul_expr shift to state 32
+-- On match_expr shift to state 39
+-- On expr shift to state 140
+-- On concat_expr shift to state 44
+-- On cmp_expr shift to state 47
+-- On array_elems shift to state 143
+-- On and_expr shift to state 71
+-- On add_expr shift to state 50
+## Reductions:
+-- On RBRACKET
+--   reduce production array_elems ->
+
+State 11:
+## Known stack suffix:
+## LBRACE
+## LR(1) items:
+primary_expr -> LBRACE . hash_pairs RBRACE [ STAR SLASH RPAREN REGEX_REPLACE RBRACKET RBRACE PLUSPLUS PLUS PERCENT OR NOT_MATCH_OP NEWLINE NEQ MINUS MATCH_OP LT LPAREN LE LBRACKET LBRACE GT GE EQEQ EOF COMMA COLON AND ]
+## Transitions:
+-- On TRUE shift to state 3
+-- On STRING shift to state 4
+-- On REGEX shift to state 5
+-- On NOT shift to state 6
+-- On NIL shift to state 7
+-- On MINUS shift to state 8
+-- On LPAREN shift to state 9
+-- On LBRACKET shift to state 10
+-- On LBRACE shift to state 11
+-- On INT shift to state 12
+-- On IDENT shift to state 13
+-- On FN shift to state 14
+-- On FLOAT shift to state 24
+-- On FALSE shift to state 25
+-- On unary_expr shift to state 26
+-- On primary_expr shift to state 27
+-- On postfix_expr shift to state 28
+-- On or_expr shift to state 30
+-- On mul_expr shift to state 32
+-- On match_expr shift to state 39
+-- On hash_pairs shift to state 133
+-- On expr shift to state 135
+-- On concat_expr shift to state 44
+-- On cmp_expr shift to state 47
+-- On and_expr shift to state 71
+-- On add_expr shift to state 50
+## Reductions:
+-- On RBRACE
+--   reduce production hash_pairs ->
+
+State 12:
+## Known stack suffix:
+## INT
+## LR(1) items:
+primary_expr -> INT . [ STAR SLASH RPAREN REGEX_REPLACE RBRACKET RBRACE PLUSPLUS PLUS PERCENT OR NOT_MATCH_OP NEWLINE NEQ MINUS MATCH_OP LT LPAREN LE LBRACKET LBRACE GT GE EQEQ EOF COMMA COLON AND ]
+## Transitions:
+## Reductions:
+-- On STAR SLASH RPAREN REGEX_REPLACE RBRACKET RBRACE PLUSPLUS PLUS PERCENT OR NOT_MATCH_OP NEWLINE NEQ MINUS MATCH_OP LT LPAREN LE LBRACKET LBRACE GT GE EQEQ EOF COMMA COLON AND
+--   reduce production primary_expr -> INT
+
+State 13:
+## Known stack suffix:
+## IDENT
+## LR(1) items:
+primary_expr -> IDENT . [ STAR SLASH RPAREN RBRACKET RBRACE PLUSPLUS PLUS PERCENT OR NOT_MATCH_OP NEWLINE NEQ MINUS MATCH_OP LT LPAREN LE LBRACKET LBRACE GT GE EQEQ EOF COMMA COLON AND ]
+## Transitions:
+## Reductions:
+-- On STAR SLASH RPAREN RBRACKET RBRACE PLUSPLUS PLUS PERCENT OR NOT_MATCH_OP NEWLINE NEQ MINUS MATCH_OP LT LPAREN LE LBRACKET LBRACE GT GE EQEQ EOF COMMA COLON AND
+--   reduce production primary_expr -> IDENT
+
+State 14:
+## Known stack suffix:
+## FN
+## LR(1) items:
+primary_expr -> FN . LPAREN param_list RPAREN block [ STAR SLASH RPAREN RBRACKET RBRACE PLUSPLUS PLUS PERCENT OR NOT_MATCH_OP NEWLINE NEQ MINUS MATCH_OP LT LPAREN LE LBRACKET LBRACE GT GE EQEQ EOF COMMA COLON AND ]
+## Transitions:
+-- On LPAREN shift to state 15
+## Reductions:
+
+State 15:
+## Known stack suffix:
+## FN LPAREN
+## LR(1) items:
+primary_expr -> FN LPAREN . param_list RPAREN block [ STAR SLASH RPAREN REGEX_REPLACE RBRACKET RBRACE PLUSPLUS PLUS PERCENT OR NOT_MATCH_OP NEWLINE NEQ MINUS MATCH_OP LT LPAREN LE LBRACKET LBRACE GT GE EQEQ EOF COMMA COLON AND ]
+## Transitions:
+-- On IDENT shift to state 16
+-- On param_list shift to state 19
+## Reductions:
+-- On RPAREN
+--   reduce production param_list ->
+
+State 16:
+## Known stack suffix:
+## IDENT
+## LR(1) items:
+param_list -> IDENT . [ RPAREN ]
+param_list -> IDENT . COMMA param_list [ RPAREN ]
+## Transitions:
+-- On COMMA shift to state 17
+## Reductions:
+-- On RPAREN
+--   reduce production param_list -> IDENT
+
+State 17:
+## Known stack suffix:
+## IDENT COMMA
+## LR(1) items:
+param_list -> IDENT COMMA . param_list [ RPAREN ]
+## Transitions:
+-- On IDENT shift to state 16
+-- On param_list shift to state 18
+## Reductions:
+-- On RPAREN
+--   reduce production param_list ->
+
+State 18:
+## Known stack suffix:
+## IDENT COMMA param_list
+## LR(1) items:
+param_list -> IDENT COMMA param_list . [ RPAREN ]
+## Transitions:
+## Reductions:
+-- On RPAREN
+--   reduce production param_list -> IDENT COMMA param_list
+
+State 19:
+## Known stack suffix:
+## FN LPAREN param_list
+## LR(1) items:
+primary_expr -> FN LPAREN param_list . RPAREN block [ STAR SLASH RPAREN REGEX_REPLACE RBRACKET RBRACE PLUSPLUS PLUS PERCENT OR NOT_MATCH_OP NEWLINE NEQ MINUS MATCH_OP LT LPAREN LE LBRACKET LBRACE GT GE EQEQ EOF COMMA COLON AND ]
+## Transitions:
+-- On RPAREN shift to state 20
+## Reductions:
+
+State 20:
+## Known stack suffix:
+## FN LPAREN param_list RPAREN
+## LR(1) items:
+primary_expr -> FN LPAREN param_list RPAREN . block [ STAR SLASH RPAREN REGEX_REPLACE RBRACKET RBRACE PLUSPLUS PLUS PERCENT OR NOT_MATCH_OP NEWLINE NEQ MINUS MATCH_OP LT LPAREN LE LBRACKET LBRACE GT GE EQEQ EOF COMMA COLON AND ]
+## Transitions:
+-- On LBRACE shift to state 21
+-- On block shift to state 132
+## Reductions:
+
+State 21:
+## Known stack suffix:
+## LBRACE
+## LR(1) items:
+block -> LBRACE . sep_lines terminated_stmts RBRACE [ STAR SLASH RPAREN REGEX_REPLACE RBRACKET RBRACE PLUSPLUS PLUS PERCENT OR NOT_MATCH_OP NEWLINE NEQ MINUS MATCH_OP LT LPAREN LE LBRACKET LBRACE GT GE EQEQ EOF ELSE COMMA COLON AND ]
+## Transitions:
+-- On sep_lines shift to state 22
+## Reductions:
+-- On WHILE TRUE STRING RETURN REGEX REC RBRACE NOT NIL NEWLINE MINUS LPAREN LET LBRACKET LBRACE INT IF IDENT FOR FN FLOAT FALSE
+--   reduce production sep_lines ->
+
+State 22:
+## Known stack suffix:
+## LBRACE sep_lines
+## LR(1) items:
+block -> LBRACE sep_lines . terminated_stmts RBRACE [ STAR SLASH RPAREN REGEX_REPLACE RBRACKET RBRACE PLUSPLUS PLUS PERCENT OR NOT_MATCH_OP NEWLINE NEQ MINUS MATCH_OP LT LPAREN LE LBRACKET LBRACE GT GE EQEQ EOF ELSE COMMA COLON AND ]
+sep_lines -> sep_lines . NEWLINE [ WHILE TRUE STRING RETURN REGEX REC RBRACE NOT NIL NEWLINE MINUS LPAREN LET LBRACKET LBRACE INT IF IDENT FOR FN FLOAT FALSE ]
+## Transitions:
+-- On WHILE shift to state 2
+-- On TRUE shift to state 3
+-- On STRING shift to state 4
+-- On RETURN shift to state 23
+-- On REGEX shift to state 5
+-- On REC shift to state 78
+-- On NOT shift to state 6
+-- On NIL shift to state 7
+-- On NEWLINE shift to state 85
+-- On MINUS shift to state 8
+-- On LPAREN shift to state 9
+-- On LET shift to state 86
+-- On LBRACKET shift to state 10
+-- On LBRACE shift to state 11
+-- On INT shift to state 12
+-- On IF shift to state 90
+-- On IDENT shift to state 102
+-- On FOR shift to state 105
+-- On FN shift to state 110
+-- On FLOAT shift to state 24
+-- On FALSE shift to state 25
+-- On unary_expr shift to state 26
+-- On terminated_stmts shift to state 116
+-- On stmt shift to state 118
+-- On primary_expr shift to state 27
+-- On postfix_expr shift to state 124
+-- On or_expr shift to state 30
+-- On mul_expr shift to state 32
+-- On match_expr shift to state 39
+-- On expr shift to state 131
+-- On concat_expr shift to state 44
+-- On cmp_expr shift to state 47
+-- On and_expr shift to state 71
+-- On add_expr shift to state 50
+## Reductions:
+-- On RBRACE
+--   reduce production terminated_stmts ->
+
+State 23:
+## Known stack suffix:
+## RETURN
+## LR(1) items:
+stmt -> RETURN . expr [ RBRACE NEWLINE EOF ]
+## Transitions:
+-- On TRUE shift to state 3
+-- On STRING shift to state 4
+-- On REGEX shift to state 5
+-- On NOT shift to state 6
+-- On NIL shift to state 7
+-- On MINUS shift to state 8
+-- On LPAREN shift to state 9
+-- On LBRACKET shift to state 10
+-- On LBRACE shift to state 11
+-- On INT shift to state 12
+-- On IDENT shift to state 13
+-- On FN shift to state 14
+-- On FLOAT shift to state 24
+-- On FALSE shift to state 25
+-- On unary_expr shift to state 26
+-- On primary_expr shift to state 27
+-- On postfix_expr shift to state 28
+-- On or_expr shift to state 30
+-- On mul_expr shift to state 32
+-- On match_expr shift to state 39
+-- On expr shift to state 77
+-- On concat_expr shift to state 44
+-- On cmp_expr shift to state 47
+-- On and_expr shift to state 71
+-- On add_expr shift to state 50
+## Reductions:
+
+State 24:
+## Known stack suffix:
+## FLOAT
+## LR(1) items:
+primary_expr -> FLOAT . [ STAR SLASH RPAREN REGEX_REPLACE RBRACKET RBRACE PLUSPLUS PLUS PERCENT OR NOT_MATCH_OP NEWLINE NEQ MINUS MATCH_OP LT LPAREN LE LBRACKET LBRACE GT GE EQEQ EOF COMMA COLON AND ]
+## Transitions:
+## Reductions:
+-- On STAR SLASH RPAREN REGEX_REPLACE RBRACKET RBRACE PLUSPLUS PLUS PERCENT OR NOT_MATCH_OP NEWLINE NEQ MINUS MATCH_OP LT LPAREN LE LBRACKET LBRACE GT GE EQEQ EOF COMMA COLON AND
+--   reduce production primary_expr -> FLOAT
+
+State 25:
+## Known stack suffix:
+## FALSE
+## LR(1) items:
+primary_expr -> FALSE . [ STAR SLASH RPAREN REGEX_REPLACE RBRACKET RBRACE PLUSPLUS PLUS PERCENT OR NOT_MATCH_OP NEWLINE NEQ MINUS MATCH_OP LT LPAREN LE LBRACKET LBRACE GT GE EQEQ EOF COMMA COLON AND ]
+## Transitions:
+## Reductions:
+-- On STAR SLASH RPAREN REGEX_REPLACE RBRACKET RBRACE PLUSPLUS PLUS PERCENT OR NOT_MATCH_OP NEWLINE NEQ MINUS MATCH_OP LT LPAREN LE LBRACKET LBRACE GT GE EQEQ EOF COMMA COLON AND
+--   reduce production primary_expr -> FALSE
+
+State 26:
+## Known stack suffix:
+## unary_expr
+## LR(1) items:
+mul_expr -> unary_expr . [ STAR SLASH RPAREN RBRACKET RBRACE PLUSPLUS PLUS PERCENT OR NOT_MATCH_OP NEWLINE NEQ MINUS MATCH_OP LT LE LBRACE GT GE EQEQ EOF COMMA COLON AND ]
+## Transitions:
+## Reductions:
+-- On STAR SLASH RPAREN RBRACKET RBRACE PLUSPLUS PLUS PERCENT OR NOT_MATCH_OP NEWLINE NEQ MINUS MATCH_OP LT LE LBRACE GT GE EQEQ EOF COMMA COLON AND
+--   reduce production mul_expr -> unary_expr
+
+State 27:
+## Known stack suffix:
+## primary_expr
+## LR(1) items:
+postfix_expr -> primary_expr . [ STAR SLASH RPAREN REGEX_REPLACE RBRACKET RBRACE PLUSPLUS PLUS PERCENT OR NOT_MATCH_OP NEWLINE NEQ MINUS MATCH_OP LT LPAREN LE LBRACKET LBRACE GT GE EQEQ EOF COMMA COLON AND ]
+## Transitions:
+## Reductions:
+-- On STAR SLASH RPAREN REGEX_REPLACE RBRACKET RBRACE PLUSPLUS PLUS PERCENT OR NOT_MATCH_OP NEWLINE NEQ MINUS MATCH_OP LT LPAREN LE LBRACKET LBRACE GT GE EQEQ EOF COMMA COLON AND
+--   reduce production postfix_expr -> primary_expr
+
+State 28:
+## Known stack suffix:
+## postfix_expr
+## LR(1) items:
+postfix_expr -> postfix_expr . LPAREN arg_list RPAREN [ STAR SLASH RPAREN RBRACKET RBRACE PLUSPLUS PLUS PERCENT OR NOT_MATCH_OP NEWLINE NEQ MINUS MATCH_OP LT LPAREN LE LBRACKET LBRACE GT GE EQEQ EOF COMMA COLON AND ]
+postfix_expr -> postfix_expr . LBRACKET expr RBRACKET [ STAR SLASH RPAREN RBRACKET RBRACE PLUSPLUS PLUS PERCENT OR NOT_MATCH_OP NEWLINE NEQ MINUS MATCH_OP LT LPAREN LE LBRACKET LBRACE GT GE EQEQ EOF COMMA COLON AND ]
+unary_expr -> postfix_expr . [ STAR SLASH RPAREN RBRACKET RBRACE PLUSPLUS PLUS PERCENT OR NOT_MATCH_OP NEWLINE NEQ MINUS MATCH_OP LT LE LBRACE GT GE EQEQ EOF COMMA COLON AND ]
+## Transitions:
+-- On LPAREN shift to state 29
+-- On LBRACKET shift to state 74
+## Reductions:
+-- On STAR SLASH RPAREN RBRACKET RBRACE PLUSPLUS PLUS PERCENT OR NOT_MATCH_OP NEWLINE NEQ MINUS MATCH_OP LT LE LBRACE GT GE EQEQ EOF COMMA COLON AND
+--   reduce production unary_expr -> postfix_expr
+
+State 29:
+## Known stack suffix:
+## postfix_expr LPAREN
+## LR(1) items:
+postfix_expr -> postfix_expr LPAREN . arg_list RPAREN [ STAR SLASH RPAREN REGEX_REPLACE RBRACKET RBRACE PLUSPLUS PLUS PERCENT OR NOT_MATCH_OP NEWLINE NEQ MINUS MATCH_OP LT LPAREN LE LBRACKET LBRACE GT GE EQEQ EOF COMMA COLON AND ]
+## Transitions:
+-- On TRUE shift to state 3
+-- On STRING shift to state 4
+-- On REGEX shift to state 5
+-- On NOT shift to state 6
+-- On NIL shift to state 7
+-- On MINUS shift to state 8
+-- On LPAREN shift to state 9
+-- On LBRACKET shift to state 10
+-- On LBRACE shift to state 11
+-- On INT shift to state 12
+-- On IDENT shift to state 13
+-- On FN shift to state 14
+-- On FLOAT shift to state 24
+-- On FALSE shift to state 25
+-- On unary_expr shift to state 26
+-- On primary_expr shift to state 27
+-- On postfix_expr shift to state 28
+-- On or_expr shift to state 30
+-- On mul_expr shift to state 32
+-- On match_expr shift to state 39
+-- On expr shift to state 68
+-- On concat_expr shift to state 44
+-- On cmp_expr shift to state 47
+-- On arg_list shift to state 72
+-- On and_expr shift to state 71
+-- On add_expr shift to state 50
+## Reductions:
+-- On RPAREN
+--   reduce production arg_list ->
+
+State 30:
+## Known stack suffix:
+## or_expr
+## LR(1) items:
+expr -> or_expr . [ RPAREN RBRACKET RBRACE NEWLINE LBRACE EOF COMMA COLON ]
+or_expr -> or_expr . OR and_expr [ RPAREN RBRACKET RBRACE OR NEWLINE LBRACE EOF COMMA COLON ]
+## Transitions:
+-- On OR shift to state 31
+## Reductions:
+-- On RPAREN RBRACKET RBRACE NEWLINE LBRACE EOF COMMA COLON
+--   reduce production expr -> or_expr
+
+State 31:
+## Known stack suffix:
+## or_expr OR
+## LR(1) items:
+or_expr -> or_expr OR . and_expr [ RPAREN RBRACKET RBRACE OR NEWLINE LBRACE EOF COMMA COLON ]
+## Transitions:
+-- On TRUE shift to state 3
+-- On STRING shift to state 4
+-- On REGEX shift to state 5
+-- On NOT shift to state 6
+-- On NIL shift to state 7
+-- On MINUS shift to state 8
+-- On LPAREN shift to state 9
+-- On LBRACKET shift to state 10
+-- On LBRACE shift to state 11
+-- On INT shift to state 12
+-- On IDENT shift to state 13
+-- On FN shift to state 14
+-- On FLOAT shift to state 24
+-- On FALSE shift to state 25
+-- On unary_expr shift to state 26
+-- On primary_expr shift to state 27
+-- On postfix_expr shift to state 28
+-- On mul_expr shift to state 32
+-- On match_expr shift to state 39
+-- On concat_expr shift to state 44
+-- On cmp_expr shift to state 47
+-- On and_expr shift to state 65
+-- On add_expr shift to state 50
+## Reductions:
+
+State 32:
+## Known stack suffix:
+## mul_expr
+## LR(1) items:
+concat_expr -> mul_expr . [ RPAREN RBRACKET RBRACE PLUSPLUS PLUS OR NOT_MATCH_OP NEWLINE NEQ MINUS MATCH_OP LT LE LBRACE GT GE EQEQ EOF COMMA COLON AND ]
+mul_expr -> mul_expr . STAR unary_expr [ STAR SLASH RPAREN RBRACKET RBRACE PLUSPLUS PLUS PERCENT OR NOT_MATCH_OP NEWLINE NEQ MINUS MATCH_OP LT LE LBRACE GT GE EQEQ EOF COMMA COLON AND ]
+mul_expr -> mul_expr . SLASH unary_expr [ STAR SLASH RPAREN RBRACKET RBRACE PLUSPLUS PLUS PERCENT OR NOT_MATCH_OP NEWLINE NEQ MINUS MATCH_OP LT LE LBRACE GT GE EQEQ EOF COMMA COLON AND ]
+mul_expr -> mul_expr . PERCENT unary_expr [ STAR SLASH RPAREN RBRACKET RBRACE PLUSPLUS PLUS PERCENT OR NOT_MATCH_OP NEWLINE NEQ MINUS MATCH_OP LT LE LBRACE GT GE EQEQ EOF COMMA COLON AND ]
+## Transitions:
+-- On STAR shift to state 33
+-- On SLASH shift to state 35
+-- On PERCENT shift to state 37
+## Reductions:
+-- On RPAREN RBRACKET RBRACE PLUSPLUS PLUS OR NOT_MATCH_OP NEWLINE NEQ MINUS MATCH_OP LT LE LBRACE GT GE EQEQ EOF COMMA COLON AND
+--   reduce production concat_expr -> mul_expr
+
+State 33:
+## Known stack suffix:
+## mul_expr STAR
+## LR(1) items:
+mul_expr -> mul_expr STAR . unary_expr [ STAR SLASH RPAREN RBRACKET RBRACE PLUSPLUS PLUS PERCENT OR NOT_MATCH_OP NEWLINE NEQ MINUS MATCH_OP LT LE LBRACE GT GE EQEQ EOF COMMA COLON AND ]
+## Transitions:
+-- On TRUE shift to state 3
+-- On STRING shift to state 4
+-- On REGEX shift to state 5
+-- On NOT shift to state 6
+-- On NIL shift to state 7
+-- On MINUS shift to state 8
+-- On LPAREN shift to state 9
+-- On LBRACKET shift to state 10
+-- On LBRACE shift to state 11
+-- On INT shift to state 12
+-- On IDENT shift to state 13
+-- On FN shift to state 14
+-- On FLOAT shift to state 24
+-- On FALSE shift to state 25
+-- On unary_expr shift to state 34
+-- On primary_expr shift to state 27
+-- On postfix_expr shift to state 28
+## Reductions:
+
+State 34:
+## Known stack suffix:
+## mul_expr STAR unary_expr
+## LR(1) items:
+mul_expr -> mul_expr STAR unary_expr . [ STAR SLASH RPAREN RBRACKET RBRACE PLUSPLUS PLUS PERCENT OR NOT_MATCH_OP NEWLINE NEQ MINUS MATCH_OP LT LE LBRACE GT GE EQEQ EOF COMMA COLON AND ]
+## Transitions:
+## Reductions:
+-- On STAR SLASH RPAREN RBRACKET RBRACE PLUSPLUS PLUS PERCENT OR NOT_MATCH_OP NEWLINE NEQ MINUS MATCH_OP LT LE LBRACE GT GE EQEQ EOF COMMA COLON AND
+--   reduce production mul_expr -> mul_expr STAR unary_expr
+
+State 35:
+## Known stack suffix:
+## mul_expr SLASH
+## LR(1) items:
+mul_expr -> mul_expr SLASH . unary_expr [ STAR SLASH RPAREN RBRACKET RBRACE PLUSPLUS PLUS PERCENT OR NOT_MATCH_OP NEWLINE NEQ MINUS MATCH_OP LT LE LBRACE GT GE EQEQ EOF COMMA COLON AND ]
+## Transitions:
+-- On TRUE shift to state 3
+-- On STRING shift to state 4
+-- On REGEX shift to state 5
+-- On NOT shift to state 6
+-- On NIL shift to state 7
+-- On MINUS shift to state 8
+-- On LPAREN shift to state 9
+-- On LBRACKET shift to state 10
+-- On LBRACE shift to state 11
+-- On INT shift to state 12
+-- On IDENT shift to state 13
+-- On FN shift to state 14
+-- On FLOAT shift to state 24
+-- On FALSE shift to state 25
+-- On unary_expr shift to state 36
+-- On primary_expr shift to state 27
+-- On postfix_expr shift to state 28
+## Reductions:
+
+State 36:
+## Known stack suffix:
+## mul_expr SLASH unary_expr
+## LR(1) items:
+mul_expr -> mul_expr SLASH unary_expr . [ STAR SLASH RPAREN RBRACKET RBRACE PLUSPLUS PLUS PERCENT OR NOT_MATCH_OP NEWLINE NEQ MINUS MATCH_OP LT LE LBRACE GT GE EQEQ EOF COMMA COLON AND ]
+## Transitions:
+## Reductions:
+-- On STAR SLASH RPAREN RBRACKET RBRACE PLUSPLUS PLUS PERCENT OR NOT_MATCH_OP NEWLINE NEQ MINUS MATCH_OP LT LE LBRACE GT GE EQEQ EOF COMMA COLON AND
+--   reduce production mul_expr -> mul_expr SLASH unary_expr
+
+State 37:
+## Known stack suffix:
+## mul_expr PERCENT
+## LR(1) items:
+mul_expr -> mul_expr PERCENT . unary_expr [ STAR SLASH RPAREN RBRACKET RBRACE PLUSPLUS PLUS PERCENT OR NOT_MATCH_OP NEWLINE NEQ MINUS MATCH_OP LT LE LBRACE GT GE EQEQ EOF COMMA COLON AND ]
+## Transitions:
+-- On TRUE shift to state 3
+-- On STRING shift to state 4
+-- On REGEX shift to state 5
+-- On NOT shift to state 6
+-- On NIL shift to state 7
+-- On MINUS shift to state 8
+-- On LPAREN shift to state 9
+-- On LBRACKET shift to state 10
+-- On LBRACE shift to state 11
+-- On INT shift to state 12
+-- On IDENT shift to state 13
+-- On FN shift to state 14
+-- On FLOAT shift to state 24
+-- On FALSE shift to state 25
+-- On unary_expr shift to state 38
+-- On primary_expr shift to state 27
+-- On postfix_expr shift to state 28
+## Reductions:
+
+State 38:
+## Known stack suffix:
+## mul_expr PERCENT unary_expr
+## LR(1) items:
+mul_expr -> mul_expr PERCENT unary_expr . [ STAR SLASH RPAREN RBRACKET RBRACE PLUSPLUS PLUS PERCENT OR NOT_MATCH_OP NEWLINE NEQ MINUS MATCH_OP LT LE LBRACE GT GE EQEQ EOF COMMA COLON AND ]
+## Transitions:
+## Reductions:
+-- On STAR SLASH RPAREN RBRACKET RBRACE PLUSPLUS PLUS PERCENT OR NOT_MATCH_OP NEWLINE NEQ MINUS MATCH_OP LT LE LBRACE GT GE EQEQ EOF COMMA COLON AND
+--   reduce production mul_expr -> mul_expr PERCENT unary_expr
+
+State 39:
+## Known stack suffix:
+## match_expr
+## LR(1) items:
+cmp_expr -> match_expr . [ RPAREN RBRACKET RBRACE OR NEWLINE NEQ LT LE LBRACE GT GE EQEQ EOF COMMA COLON AND ]
+match_expr -> match_expr . MATCH_OP REGEX [ RPAREN RBRACKET RBRACE OR NOT_MATCH_OP NEWLINE NEQ MATCH_OP LT LE LBRACE GT GE EQEQ EOF COMMA COLON AND ]
+match_expr -> match_expr . NOT_MATCH_OP REGEX [ RPAREN RBRACKET RBRACE OR NOT_MATCH_OP NEWLINE NEQ MATCH_OP LT LE LBRACE GT GE EQEQ EOF COMMA COLON AND ]
+## Transitions:
+-- On NOT_MATCH_OP shift to state 40
+-- On MATCH_OP shift to state 42
+## Reductions:
+-- On RPAREN RBRACKET RBRACE OR NEWLINE NEQ LT LE LBRACE GT GE EQEQ EOF COMMA COLON AND
+--   reduce production cmp_expr -> match_expr
+
+State 40:
+## Known stack suffix:
+## match_expr NOT_MATCH_OP
+## LR(1) items:
+match_expr -> match_expr NOT_MATCH_OP . REGEX [ RPAREN RBRACKET RBRACE OR NOT_MATCH_OP NEWLINE NEQ MATCH_OP LT LE LBRACE GT GE EQEQ EOF COMMA COLON AND ]
+## Transitions:
+-- On REGEX shift to state 41
+## Reductions:
+
+State 41:
+## Known stack suffix:
+## match_expr NOT_MATCH_OP REGEX
+## LR(1) items:
+match_expr -> match_expr NOT_MATCH_OP REGEX . [ RPAREN RBRACKET RBRACE OR NOT_MATCH_OP NEWLINE NEQ MATCH_OP LT LE LBRACE GT GE EQEQ EOF COMMA COLON AND ]
+## Transitions:
+## Reductions:
+-- On RPAREN RBRACKET RBRACE OR NOT_MATCH_OP NEWLINE NEQ MATCH_OP LT LE LBRACE GT GE EQEQ EOF COMMA COLON AND
+--   reduce production match_expr -> match_expr NOT_MATCH_OP REGEX
+
+State 42:
+## Known stack suffix:
+## match_expr MATCH_OP
+## LR(1) items:
+match_expr -> match_expr MATCH_OP . REGEX [ RPAREN RBRACKET RBRACE OR NOT_MATCH_OP NEWLINE NEQ MATCH_OP LT LE LBRACE GT GE EQEQ EOF COMMA COLON AND ]
+## Transitions:
+-- On REGEX shift to state 43
+## Reductions:
+
+State 43:
+## Known stack suffix:
+## match_expr MATCH_OP REGEX
+## LR(1) items:
+match_expr -> match_expr MATCH_OP REGEX . [ RPAREN RBRACKET RBRACE OR NOT_MATCH_OP NEWLINE NEQ MATCH_OP LT LE LBRACE GT GE EQEQ EOF COMMA COLON AND ]
+## Transitions:
+## Reductions:
+-- On RPAREN RBRACKET RBRACE OR NOT_MATCH_OP NEWLINE NEQ MATCH_OP LT LE LBRACE GT GE EQEQ EOF COMMA COLON AND
+--   reduce production match_expr -> match_expr MATCH_OP REGEX
+
+State 44:
+## Known stack suffix:
+## concat_expr
+## LR(1) items:
+add_expr -> concat_expr . [ RPAREN RBRACKET RBRACE PLUS OR NOT_MATCH_OP NEWLINE NEQ MINUS MATCH_OP LT LE LBRACE GT GE EQEQ EOF COMMA COLON AND ]
+concat_expr -> concat_expr . PLUSPLUS mul_expr [ RPAREN RBRACKET RBRACE PLUSPLUS PLUS OR NOT_MATCH_OP NEWLINE NEQ MINUS MATCH_OP LT LE LBRACE GT GE EQEQ EOF COMMA COLON AND ]
+## Transitions:
+-- On PLUSPLUS shift to state 45
+## Reductions:
+-- On RPAREN RBRACKET RBRACE PLUS OR NOT_MATCH_OP NEWLINE NEQ MINUS MATCH_OP LT LE LBRACE GT GE EQEQ EOF COMMA COLON AND
+--   reduce production add_expr -> concat_expr
+
+State 45:
+## Known stack suffix:
+## concat_expr PLUSPLUS
+## LR(1) items:
+concat_expr -> concat_expr PLUSPLUS . mul_expr [ RPAREN RBRACKET RBRACE PLUSPLUS PLUS OR NOT_MATCH_OP NEWLINE NEQ MINUS MATCH_OP LT LE LBRACE GT GE EQEQ EOF COMMA COLON AND ]
+## Transitions:
+-- On TRUE shift to state 3
+-- On STRING shift to state 4
+-- On REGEX shift to state 5
+-- On NOT shift to state 6
+-- On NIL shift to state 7
+-- On MINUS shift to state 8
+-- On LPAREN shift to state 9
+-- On LBRACKET shift to state 10
+-- On LBRACE shift to state 11
+-- On INT shift to state 12
+-- On IDENT shift to state 13
+-- On FN shift to state 14
+-- On FLOAT shift to state 24
+-- On FALSE shift to state 25
+-- On unary_expr shift to state 26
+-- On primary_expr shift to state 27
+-- On postfix_expr shift to state 28
+-- On mul_expr shift to state 46
+## Reductions:
+
+State 46:
+## Known stack suffix:
+## concat_expr PLUSPLUS mul_expr
+## LR(1) items:
+concat_expr -> concat_expr PLUSPLUS mul_expr . [ RPAREN RBRACKET RBRACE PLUSPLUS PLUS OR NOT_MATCH_OP NEWLINE NEQ MINUS MATCH_OP LT LE LBRACE GT GE EQEQ EOF COMMA COLON AND ]
+mul_expr -> mul_expr . STAR unary_expr [ STAR SLASH RPAREN RBRACKET RBRACE PLUSPLUS PLUS PERCENT OR NOT_MATCH_OP NEWLINE NEQ MINUS MATCH_OP LT LE LBRACE GT GE EQEQ EOF COMMA COLON AND ]
+mul_expr -> mul_expr . SLASH unary_expr [ STAR SLASH RPAREN RBRACKET RBRACE PLUSPLUS PLUS PERCENT OR NOT_MATCH_OP NEWLINE NEQ MINUS MATCH_OP LT LE LBRACE GT GE EQEQ EOF COMMA COLON AND ]
+mul_expr -> mul_expr . PERCENT unary_expr [ STAR SLASH RPAREN RBRACKET RBRACE PLUSPLUS PLUS PERCENT OR NOT_MATCH_OP NEWLINE NEQ MINUS MATCH_OP LT LE LBRACE GT GE EQEQ EOF COMMA COLON AND ]
+## Transitions:
+-- On STAR shift to state 33
+-- On SLASH shift to state 35
+-- On PERCENT shift to state 37
+## Reductions:
+-- On RPAREN RBRACKET RBRACE PLUSPLUS PLUS OR NOT_MATCH_OP NEWLINE NEQ MINUS MATCH_OP LT LE LBRACE GT GE EQEQ EOF COMMA COLON AND
+--   reduce production concat_expr -> concat_expr PLUSPLUS mul_expr
+
+State 47:
+## Known stack suffix:
+## cmp_expr
+## LR(1) items:
+and_expr -> cmp_expr . [ RPAREN RBRACKET RBRACE OR NEWLINE LBRACE EOF COMMA COLON AND ]
+cmp_expr -> cmp_expr . EQEQ match_expr [ RPAREN RBRACKET RBRACE OR NEWLINE NEQ LT LE LBRACE GT GE EQEQ EOF COMMA COLON AND ]
+cmp_expr -> cmp_expr . NEQ match_expr [ RPAREN RBRACKET RBRACE OR NEWLINE NEQ LT LE LBRACE GT GE EQEQ EOF COMMA COLON AND ]
+cmp_expr -> cmp_expr . LT match_expr [ RPAREN RBRACKET RBRACE OR NEWLINE NEQ LT LE LBRACE GT GE EQEQ EOF COMMA COLON AND ]
+cmp_expr -> cmp_expr . GT match_expr [ RPAREN RBRACKET RBRACE OR NEWLINE NEQ LT LE LBRACE GT GE EQEQ EOF COMMA COLON AND ]
+cmp_expr -> cmp_expr . LE match_expr [ RPAREN RBRACKET RBRACE OR NEWLINE NEQ LT LE LBRACE GT GE EQEQ EOF COMMA COLON AND ]
+cmp_expr -> cmp_expr . GE match_expr [ RPAREN RBRACKET RBRACE OR NEWLINE NEQ LT LE LBRACE GT GE EQEQ EOF COMMA COLON AND ]
+## Transitions:
+-- On NEQ shift to state 48
+-- On LT shift to state 55
+-- On LE shift to state 57
+-- On GT shift to state 59
+-- On GE shift to state 61
+-- On EQEQ shift to state 63
+## Reductions:
+-- On RPAREN RBRACKET RBRACE OR NEWLINE LBRACE EOF COMMA COLON AND
+--   reduce production and_expr -> cmp_expr
+
+State 48:
+## Known stack suffix:
+## cmp_expr NEQ
+## LR(1) items:
+cmp_expr -> cmp_expr NEQ . match_expr [ RPAREN RBRACKET RBRACE OR NEWLINE NEQ LT LE LBRACE GT GE EQEQ EOF COMMA COLON AND ]
+## Transitions:
+-- On TRUE shift to state 3
+-- On STRING shift to state 4
+-- On REGEX shift to state 5
+-- On NOT shift to state 6
+-- On NIL shift to state 7
+-- On MINUS shift to state 8
+-- On LPAREN shift to state 9
+-- On LBRACKET shift to state 10
+-- On LBRACE shift to state 11
+-- On INT shift to state 12
+-- On IDENT shift to state 13
+-- On FN shift to state 14
+-- On FLOAT shift to state 24
+-- On FALSE shift to state 25
+-- On unary_expr shift to state 26
+-- On primary_expr shift to state 27
+-- On postfix_expr shift to state 28
+-- On mul_expr shift to state 32
+-- On match_expr shift to state 49
+-- On concat_expr shift to state 44
+-- On add_expr shift to state 50
+## Reductions:
+
+State 49:
+## Known stack suffix:
+## cmp_expr NEQ match_expr
+## LR(1) items:
+cmp_expr -> cmp_expr NEQ match_expr . [ RPAREN RBRACKET RBRACE OR NEWLINE NEQ LT LE LBRACE GT GE EQEQ EOF COMMA COLON AND ]
+match_expr -> match_expr . MATCH_OP REGEX [ RPAREN RBRACKET RBRACE OR NOT_MATCH_OP NEWLINE NEQ MATCH_OP LT LE LBRACE GT GE EQEQ EOF COMMA COLON AND ]
+match_expr -> match_expr . NOT_MATCH_OP REGEX [ RPAREN RBRACKET RBRACE OR NOT_MATCH_OP NEWLINE NEQ MATCH_OP LT LE LBRACE GT GE EQEQ EOF COMMA COLON AND ]
+## Transitions:
+-- On NOT_MATCH_OP shift to state 40
+-- On MATCH_OP shift to state 42
+## Reductions:
+-- On RPAREN RBRACKET RBRACE OR NEWLINE NEQ LT LE LBRACE GT GE EQEQ EOF COMMA COLON AND
+--   reduce production cmp_expr -> cmp_expr NEQ match_expr
+
+State 50:
+## Known stack suffix:
+## add_expr
+## LR(1) items:
+add_expr -> add_expr . PLUS concat_expr [ RPAREN RBRACKET RBRACE PLUS OR NOT_MATCH_OP NEWLINE NEQ MINUS MATCH_OP LT LE LBRACE GT GE EQEQ EOF COMMA COLON AND ]
+add_expr -> add_expr . MINUS concat_expr [ RPAREN RBRACKET RBRACE PLUS OR NOT_MATCH_OP NEWLINE NEQ MINUS MATCH_OP LT LE LBRACE GT GE EQEQ EOF COMMA COLON AND ]
+match_expr -> add_expr . [ RPAREN RBRACKET RBRACE OR NOT_MATCH_OP NEWLINE NEQ MATCH_OP LT LE LBRACE GT GE EQEQ EOF COMMA COLON AND ]
+## Transitions:
+-- On PLUS shift to state 51
+-- On MINUS shift to state 53
+## Reductions:
+-- On RPAREN RBRACKET RBRACE OR NOT_MATCH_OP NEWLINE NEQ MATCH_OP LT LE LBRACE GT GE EQEQ EOF COMMA COLON AND
+--   reduce production match_expr -> add_expr
+
+State 51:
+## Known stack suffix:
+## add_expr PLUS
+## LR(1) items:
+add_expr -> add_expr PLUS . concat_expr [ RPAREN RBRACKET RBRACE PLUS OR NOT_MATCH_OP NEWLINE NEQ MINUS MATCH_OP LT LE LBRACE GT GE EQEQ EOF COMMA COLON AND ]
+## Transitions:
+-- On TRUE shift to state 3
+-- On STRING shift to state 4
+-- On REGEX shift to state 5
+-- On NOT shift to state 6
+-- On NIL shift to state 7
+-- On MINUS shift to state 8
+-- On LPAREN shift to state 9
+-- On LBRACKET shift to state 10
+-- On LBRACE shift to state 11
+-- On INT shift to state 12
+-- On IDENT shift to state 13
+-- On FN shift to state 14
+-- On FLOAT shift to state 24
+-- On FALSE shift to state 25
+-- On unary_expr shift to state 26
+-- On primary_expr shift to state 27
+-- On postfix_expr shift to state 28
+-- On mul_expr shift to state 32
+-- On concat_expr shift to state 52
+## Reductions:
+
+State 52:
+## Known stack suffix:
+## add_expr PLUS concat_expr
+## LR(1) items:
+add_expr -> add_expr PLUS concat_expr . [ RPAREN RBRACKET RBRACE PLUS OR NOT_MATCH_OP NEWLINE NEQ MINUS MATCH_OP LT LE LBRACE GT GE EQEQ EOF COMMA COLON AND ]
+concat_expr -> concat_expr . PLUSPLUS mul_expr [ RPAREN RBRACKET RBRACE PLUSPLUS PLUS OR NOT_MATCH_OP NEWLINE NEQ MINUS MATCH_OP LT LE LBRACE GT GE EQEQ EOF COMMA COLON AND ]
+## Transitions:
+-- On PLUSPLUS shift to state 45
+## Reductions:
+-- On RPAREN RBRACKET RBRACE PLUS OR NOT_MATCH_OP NEWLINE NEQ MINUS MATCH_OP LT LE LBRACE GT GE EQEQ EOF COMMA COLON AND
+--   reduce production add_expr -> add_expr PLUS concat_expr
+
+State 53:
+## Known stack suffix:
+## add_expr MINUS
+## LR(1) items:
+add_expr -> add_expr MINUS . concat_expr [ RPAREN RBRACKET RBRACE PLUS OR NOT_MATCH_OP NEWLINE NEQ MINUS MATCH_OP LT LE LBRACE GT GE EQEQ EOF COMMA COLON AND ]
+## Transitions:
+-- On TRUE shift to state 3
+-- On STRING shift to state 4
+-- On REGEX shift to state 5
+-- On NOT shift to state 6
+-- On NIL shift to state 7
+-- On MINUS shift to state 8
+-- On LPAREN shift to state 9
+-- On LBRACKET shift to state 10
+-- On LBRACE shift to state 11
+-- On INT shift to state 12
+-- On IDENT shift to state 13
+-- On FN shift to state 14
+-- On FLOAT shift to state 24
+-- On FALSE shift to state 25
+-- On unary_expr shift to state 26
+-- On primary_expr shift to state 27
+-- On postfix_expr shift to state 28
+-- On mul_expr shift to state 32
+-- On concat_expr shift to state 54
+## Reductions:
+
+State 54:
+## Known stack suffix:
+## add_expr MINUS concat_expr
+## LR(1) items:
+add_expr -> add_expr MINUS concat_expr . [ RPAREN RBRACKET RBRACE PLUS OR NOT_MATCH_OP NEWLINE NEQ MINUS MATCH_OP LT LE LBRACE GT GE EQEQ EOF COMMA COLON AND ]
+concat_expr -> concat_expr . PLUSPLUS mul_expr [ RPAREN RBRACKET RBRACE PLUSPLUS PLUS OR NOT_MATCH_OP NEWLINE NEQ MINUS MATCH_OP LT LE LBRACE GT GE EQEQ EOF COMMA COLON AND ]
+## Transitions:
+-- On PLUSPLUS shift to state 45
+## Reductions:
+-- On RPAREN RBRACKET RBRACE PLUS OR NOT_MATCH_OP NEWLINE NEQ MINUS MATCH_OP LT LE LBRACE GT GE EQEQ EOF COMMA COLON AND
+--   reduce production add_expr -> add_expr MINUS concat_expr
+
+State 55:
+## Known stack suffix:
+## cmp_expr LT
+## LR(1) items:
+cmp_expr -> cmp_expr LT . match_expr [ RPAREN RBRACKET RBRACE OR NEWLINE NEQ LT LE LBRACE GT GE EQEQ EOF COMMA COLON AND ]
+## Transitions:
+-- On TRUE shift to state 3
+-- On STRING shift to state 4
+-- On REGEX shift to state 5
+-- On NOT shift to state 6
+-- On NIL shift to state 7
+-- On MINUS shift to state 8
+-- On LPAREN shift to state 9
+-- On LBRACKET shift to state 10
+-- On LBRACE shift to state 11
+-- On INT shift to state 12
+-- On IDENT shift to state 13
+-- On FN shift to state 14
+-- On FLOAT shift to state 24
+-- On FALSE shift to state 25
+-- On unary_expr shift to state 26
+-- On primary_expr shift to state 27
+-- On postfix_expr shift to state 28
+-- On mul_expr shift to state 32
+-- On match_expr shift to state 56
+-- On concat_expr shift to state 44
+-- On add_expr shift to state 50
+## Reductions:
+
+State 56:
+## Known stack suffix:
+## cmp_expr LT match_expr
+## LR(1) items:
+cmp_expr -> cmp_expr LT match_expr . [ RPAREN RBRACKET RBRACE OR NEWLINE NEQ LT LE LBRACE GT GE EQEQ EOF COMMA COLON AND ]
+match_expr -> match_expr . MATCH_OP REGEX [ RPAREN RBRACKET RBRACE OR NOT_MATCH_OP NEWLINE NEQ MATCH_OP LT LE LBRACE GT GE EQEQ EOF COMMA COLON AND ]
+match_expr -> match_expr . NOT_MATCH_OP REGEX [ RPAREN RBRACKET RBRACE OR NOT_MATCH_OP NEWLINE NEQ MATCH_OP LT LE LBRACE GT GE EQEQ EOF COMMA COLON AND ]
+## Transitions:
+-- On NOT_MATCH_OP shift to state 40
+-- On MATCH_OP shift to state 42
+## Reductions:
+-- On RPAREN RBRACKET RBRACE OR NEWLINE NEQ LT LE LBRACE GT GE EQEQ EOF COMMA COLON AND
+--   reduce production cmp_expr -> cmp_expr LT match_expr
+
+State 57:
+## Known stack suffix:
+## cmp_expr LE
+## LR(1) items:
+cmp_expr -> cmp_expr LE . match_expr [ RPAREN RBRACKET RBRACE OR NEWLINE NEQ LT LE LBRACE GT GE EQEQ EOF COMMA COLON AND ]
+## Transitions:
+-- On TRUE shift to state 3
+-- On STRING shift to state 4
+-- On REGEX shift to state 5
+-- On NOT shift to state 6
+-- On NIL shift to state 7
+-- On MINUS shift to state 8
+-- On LPAREN shift to state 9
+-- On LBRACKET shift to state 10
+-- On LBRACE shift to state 11
+-- On INT shift to state 12
+-- On IDENT shift to state 13
+-- On FN shift to state 14
+-- On FLOAT shift to state 24
+-- On FALSE shift to state 25
+-- On unary_expr shift to state 26
+-- On primary_expr shift to state 27
+-- On postfix_expr shift to state 28
+-- On mul_expr shift to state 32
+-- On match_expr shift to state 58
+-- On concat_expr shift to state 44
+-- On add_expr shift to state 50
+## Reductions:
+
+State 58:
+## Known stack suffix:
+## cmp_expr LE match_expr
+## LR(1) items:
+cmp_expr -> cmp_expr LE match_expr . [ RPAREN RBRACKET RBRACE OR NEWLINE NEQ LT LE LBRACE GT GE EQEQ EOF COMMA COLON AND ]
+match_expr -> match_expr . MATCH_OP REGEX [ RPAREN RBRACKET RBRACE OR NOT_MATCH_OP NEWLINE NEQ MATCH_OP LT LE LBRACE GT GE EQEQ EOF COMMA COLON AND ]
+match_expr -> match_expr . NOT_MATCH_OP REGEX [ RPAREN RBRACKET RBRACE OR NOT_MATCH_OP NEWLINE NEQ MATCH_OP LT LE LBRACE GT GE EQEQ EOF COMMA COLON AND ]
+## Transitions:
+-- On NOT_MATCH_OP shift to state 40
+-- On MATCH_OP shift to state 42
+## Reductions:
+-- On RPAREN RBRACKET RBRACE OR NEWLINE NEQ LT LE LBRACE GT GE EQEQ EOF COMMA COLON AND
+--   reduce production cmp_expr -> cmp_expr LE match_expr
+
+State 59:
+## Known stack suffix:
+## cmp_expr GT
+## LR(1) items:
+cmp_expr -> cmp_expr GT . match_expr [ RPAREN RBRACKET RBRACE OR NEWLINE NEQ LT LE LBRACE GT GE EQEQ EOF COMMA COLON AND ]
+## Transitions:
+-- On TRUE shift to state 3
+-- On STRING shift to state 4
+-- On REGEX shift to state 5
+-- On NOT shift to state 6
+-- On NIL shift to state 7
+-- On MINUS shift to state 8
+-- On LPAREN shift to state 9
+-- On LBRACKET shift to state 10
+-- On LBRACE shift to state 11
+-- On INT shift to state 12
+-- On IDENT shift to state 13
+-- On FN shift to state 14
+-- On FLOAT shift to state 24
+-- On FALSE shift to state 25
+-- On unary_expr shift to state 26
+-- On primary_expr shift to state 27
+-- On postfix_expr shift to state 28
+-- On mul_expr shift to state 32
+-- On match_expr shift to state 60
+-- On concat_expr shift to state 44
+-- On add_expr shift to state 50
+## Reductions:
+
+State 60:
+## Known stack suffix:
+## cmp_expr GT match_expr
+## LR(1) items:
+cmp_expr -> cmp_expr GT match_expr . [ RPAREN RBRACKET RBRACE OR NEWLINE NEQ LT LE LBRACE GT GE EQEQ EOF COMMA COLON AND ]
+match_expr -> match_expr . MATCH_OP REGEX [ RPAREN RBRACKET RBRACE OR NOT_MATCH_OP NEWLINE NEQ MATCH_OP LT LE LBRACE GT GE EQEQ EOF COMMA COLON AND ]
+match_expr -> match_expr . NOT_MATCH_OP REGEX [ RPAREN RBRACKET RBRACE OR NOT_MATCH_OP NEWLINE NEQ MATCH_OP LT LE LBRACE GT GE EQEQ EOF COMMA COLON AND ]
+## Transitions:
+-- On NOT_MATCH_OP shift to state 40
+-- On MATCH_OP shift to state 42
+## Reductions:
+-- On RPAREN RBRACKET RBRACE OR NEWLINE NEQ LT LE LBRACE GT GE EQEQ EOF COMMA COLON AND
+--   reduce production cmp_expr -> cmp_expr GT match_expr
+
+State 61:
+## Known stack suffix:
+## cmp_expr GE
+## LR(1) items:
+cmp_expr -> cmp_expr GE . match_expr [ RPAREN RBRACKET RBRACE OR NEWLINE NEQ LT LE LBRACE GT GE EQEQ EOF COMMA COLON AND ]
+## Transitions:
+-- On TRUE shift to state 3
+-- On STRING shift to state 4
+-- On REGEX shift to state 5
+-- On NOT shift to state 6
+-- On NIL shift to state 7
+-- On MINUS shift to state 8
+-- On LPAREN shift to state 9
+-- On LBRACKET shift to state 10
+-- On LBRACE shift to state 11
+-- On INT shift to state 12
+-- On IDENT shift to state 13
+-- On FN shift to state 14
+-- On FLOAT shift to state 24
+-- On FALSE shift to state 25
+-- On unary_expr shift to state 26
+-- On primary_expr shift to state 27
+-- On postfix_expr shift to state 28
+-- On mul_expr shift to state 32
+-- On match_expr shift to state 62
+-- On concat_expr shift to state 44
+-- On add_expr shift to state 50
+## Reductions:
+
+State 62:
+## Known stack suffix:
+## cmp_expr GE match_expr
+## LR(1) items:
+cmp_expr -> cmp_expr GE match_expr . [ RPAREN RBRACKET RBRACE OR NEWLINE NEQ LT LE LBRACE GT GE EQEQ EOF COMMA COLON AND ]
+match_expr -> match_expr . MATCH_OP REGEX [ RPAREN RBRACKET RBRACE OR NOT_MATCH_OP NEWLINE NEQ MATCH_OP LT LE LBRACE GT GE EQEQ EOF COMMA COLON AND ]
+match_expr -> match_expr . NOT_MATCH_OP REGEX [ RPAREN RBRACKET RBRACE OR NOT_MATCH_OP NEWLINE NEQ MATCH_OP LT LE LBRACE GT GE EQEQ EOF COMMA COLON AND ]
+## Transitions:
+-- On NOT_MATCH_OP shift to state 40
+-- On MATCH_OP shift to state 42
+## Reductions:
+-- On RPAREN RBRACKET RBRACE OR NEWLINE NEQ LT LE LBRACE GT GE EQEQ EOF COMMA COLON AND
+--   reduce production cmp_expr -> cmp_expr GE match_expr
+
+State 63:
+## Known stack suffix:
+## cmp_expr EQEQ
+## LR(1) items:
+cmp_expr -> cmp_expr EQEQ . match_expr [ RPAREN RBRACKET RBRACE OR NEWLINE NEQ LT LE LBRACE GT GE EQEQ EOF COMMA COLON AND ]
+## Transitions:
+-- On TRUE shift to state 3
+-- On STRING shift to state 4
+-- On REGEX shift to state 5
+-- On NOT shift to state 6
+-- On NIL shift to state 7
+-- On MINUS shift to state 8
+-- On LPAREN shift to state 9
+-- On LBRACKET shift to state 10
+-- On LBRACE shift to state 11
+-- On INT shift to state 12
+-- On IDENT shift to state 13
+-- On FN shift to state 14
+-- On FLOAT shift to state 24
+-- On FALSE shift to state 25
+-- On unary_expr shift to state 26
+-- On primary_expr shift to state 27
+-- On postfix_expr shift to state 28
+-- On mul_expr shift to state 32
+-- On match_expr shift to state 64
+-- On concat_expr shift to state 44
+-- On add_expr shift to state 50
+## Reductions:
+
+State 64:
+## Known stack suffix:
+## cmp_expr EQEQ match_expr
+## LR(1) items:
+cmp_expr -> cmp_expr EQEQ match_expr . [ RPAREN RBRACKET RBRACE OR NEWLINE NEQ LT LE LBRACE GT GE EQEQ EOF COMMA COLON AND ]
+match_expr -> match_expr . MATCH_OP REGEX [ RPAREN RBRACKET RBRACE OR NOT_MATCH_OP NEWLINE NEQ MATCH_OP LT LE LBRACE GT GE EQEQ EOF COMMA COLON AND ]
+match_expr -> match_expr . NOT_MATCH_OP REGEX [ RPAREN RBRACKET RBRACE OR NOT_MATCH_OP NEWLINE NEQ MATCH_OP LT LE LBRACE GT GE EQEQ EOF COMMA COLON AND ]
+## Transitions:
+-- On NOT_MATCH_OP shift to state 40
+-- On MATCH_OP shift to state 42
+## Reductions:
+-- On RPAREN RBRACKET RBRACE OR NEWLINE NEQ LT LE LBRACE GT GE EQEQ EOF COMMA COLON AND
+--   reduce production cmp_expr -> cmp_expr EQEQ match_expr
+
+State 65:
+## Known stack suffix:
+## or_expr OR and_expr
+## LR(1) items:
+and_expr -> and_expr . AND cmp_expr [ RPAREN RBRACKET RBRACE OR NEWLINE LBRACE EOF COMMA COLON AND ]
+or_expr -> or_expr OR and_expr . [ RPAREN RBRACKET RBRACE OR NEWLINE LBRACE EOF COMMA COLON ]
+## Transitions:
+-- On AND shift to state 66
+## Reductions:
+-- On RPAREN RBRACKET RBRACE OR NEWLINE LBRACE EOF COMMA COLON
+--   reduce production or_expr -> or_expr OR and_expr
+
+State 66:
+## Known stack suffix:
+## and_expr AND
+## LR(1) items:
+and_expr -> and_expr AND . cmp_expr [ RPAREN RBRACKET RBRACE OR NEWLINE LBRACE EOF COMMA COLON AND ]
+## Transitions:
+-- On TRUE shift to state 3
+-- On STRING shift to state 4
+-- On REGEX shift to state 5
+-- On NOT shift to state 6
+-- On NIL shift to state 7
+-- On MINUS shift to state 8
+-- On LPAREN shift to state 9
+-- On LBRACKET shift to state 10
+-- On LBRACE shift to state 11
+-- On INT shift to state 12
+-- On IDENT shift to state 13
+-- On FN shift to state 14
+-- On FLOAT shift to state 24
+-- On FALSE shift to state 25
+-- On unary_expr shift to state 26
+-- On primary_expr shift to state 27
+-- On postfix_expr shift to state 28
+-- On mul_expr shift to state 32
+-- On match_expr shift to state 39
+-- On concat_expr shift to state 44
+-- On cmp_expr shift to state 67
+-- On add_expr shift to state 50
+## Reductions:
+
+State 67:
+## Known stack suffix:
+## and_expr AND cmp_expr
+## LR(1) items:
+and_expr -> and_expr AND cmp_expr . [ RPAREN RBRACKET RBRACE OR NEWLINE LBRACE EOF COMMA COLON AND ]
+cmp_expr -> cmp_expr . EQEQ match_expr [ RPAREN RBRACKET RBRACE OR NEWLINE NEQ LT LE LBRACE GT GE EQEQ EOF COMMA COLON AND ]
+cmp_expr -> cmp_expr . NEQ match_expr [ RPAREN RBRACKET RBRACE OR NEWLINE NEQ LT LE LBRACE GT GE EQEQ EOF COMMA COLON AND ]
+cmp_expr -> cmp_expr . LT match_expr [ RPAREN RBRACKET RBRACE OR NEWLINE NEQ LT LE LBRACE GT GE EQEQ EOF COMMA COLON AND ]
+cmp_expr -> cmp_expr . GT match_expr [ RPAREN RBRACKET RBRACE OR NEWLINE NEQ LT LE LBRACE GT GE EQEQ EOF COMMA COLON AND ]
+cmp_expr -> cmp_expr . LE match_expr [ RPAREN RBRACKET RBRACE OR NEWLINE NEQ LT LE LBRACE GT GE EQEQ EOF COMMA COLON AND ]
+cmp_expr -> cmp_expr . GE match_expr [ RPAREN RBRACKET RBRACE OR NEWLINE NEQ LT LE LBRACE GT GE EQEQ EOF COMMA COLON AND ]
+## Transitions:
+-- On NEQ shift to state 48
+-- On LT shift to state 55
+-- On LE shift to state 57
+-- On GT shift to state 59
+-- On GE shift to state 61
+-- On EQEQ shift to state 63
+## Reductions:
+-- On RPAREN RBRACKET RBRACE OR NEWLINE LBRACE EOF COMMA COLON AND
+--   reduce production and_expr -> and_expr AND cmp_expr
+
+State 68:
+## Known stack suffix:
+## expr
+## LR(1) items:
+arg_list -> expr . [ RPAREN ]
+arg_list -> expr . COMMA arg_list [ RPAREN ]
+## Transitions:
+-- On COMMA shift to state 69
+## Reductions:
+-- On RPAREN
+--   reduce production arg_list -> expr
+
+State 69:
+## Known stack suffix:
+## expr COMMA
+## LR(1) items:
+arg_list -> expr COMMA . arg_list [ RPAREN ]
+## Transitions:
+-- On TRUE shift to state 3
+-- On STRING shift to state 4
+-- On REGEX shift to state 5
+-- On NOT shift to state 6
+-- On NIL shift to state 7
+-- On MINUS shift to state 8
+-- On LPAREN shift to state 9
+-- On LBRACKET shift to state 10
+-- On LBRACE shift to state 11
+-- On INT shift to state 12
+-- On IDENT shift to state 13
+-- On FN shift to state 14
+-- On FLOAT shift to state 24
+-- On FALSE shift to state 25
+-- On unary_expr shift to state 26
+-- On primary_expr shift to state 27
+-- On postfix_expr shift to state 28
+-- On or_expr shift to state 30
+-- On mul_expr shift to state 32
+-- On match_expr shift to state 39
+-- On expr shift to state 68
+-- On concat_expr shift to state 44
+-- On cmp_expr shift to state 47
+-- On arg_list shift to state 70
+-- On and_expr shift to state 71
+-- On add_expr shift to state 50
+## Reductions:
+-- On RPAREN
+--   reduce production arg_list ->
+
+State 70:
+## Known stack suffix:
+## expr COMMA arg_list
+## LR(1) items:
+arg_list -> expr COMMA arg_list . [ RPAREN ]
+## Transitions:
+## Reductions:
+-- On RPAREN
+--   reduce production arg_list -> expr COMMA arg_list
+
+State 71:
+## Known stack suffix:
+## and_expr
+## LR(1) items:
+and_expr -> and_expr . AND cmp_expr [ RPAREN RBRACKET RBRACE OR NEWLINE LBRACE EOF COMMA COLON AND ]
+or_expr -> and_expr . [ RPAREN RBRACKET RBRACE OR NEWLINE LBRACE EOF COMMA COLON ]
+## Transitions:
+-- On AND shift to state 66
+## Reductions:
+-- On RPAREN RBRACKET RBRACE OR NEWLINE LBRACE EOF COMMA COLON
+--   reduce production or_expr -> and_expr
+
+State 72:
+## Known stack suffix:
+## postfix_expr LPAREN arg_list
+## LR(1) items:
+postfix_expr -> postfix_expr LPAREN arg_list . RPAREN [ STAR SLASH RPAREN REGEX_REPLACE RBRACKET RBRACE PLUSPLUS PLUS PERCENT OR NOT_MATCH_OP NEWLINE NEQ MINUS MATCH_OP LT LPAREN LE LBRACKET LBRACE GT GE EQEQ EOF COMMA COLON AND ]
+## Transitions:
+-- On RPAREN shift to state 73
+## Reductions:
+
+State 73:
+## Known stack suffix:
+## postfix_expr LPAREN arg_list RPAREN
+## LR(1) items:
+postfix_expr -> postfix_expr LPAREN arg_list RPAREN . [ STAR SLASH RPAREN REGEX_REPLACE RBRACKET RBRACE PLUSPLUS PLUS PERCENT OR NOT_MATCH_OP NEWLINE NEQ MINUS MATCH_OP LT LPAREN LE LBRACKET LBRACE GT GE EQEQ EOF COMMA COLON AND ]
+## Transitions:
+## Reductions:
+-- On STAR SLASH RPAREN REGEX_REPLACE RBRACKET RBRACE PLUSPLUS PLUS PERCENT OR NOT_MATCH_OP NEWLINE NEQ MINUS MATCH_OP LT LPAREN LE LBRACKET LBRACE GT GE EQEQ EOF COMMA COLON AND
+--   reduce production postfix_expr -> postfix_expr LPAREN arg_list RPAREN
+
+State 74:
+## Known stack suffix:
+## postfix_expr LBRACKET
+## LR(1) items:
+postfix_expr -> postfix_expr LBRACKET . expr RBRACKET [ STAR SLASH RPAREN RBRACKET RBRACE PLUSPLUS PLUS PERCENT OR NOT_MATCH_OP NEWLINE NEQ MINUS MATCH_OP LT LPAREN LE LBRACKET LBRACE GT GE EQEQ EOF COMMA COLON AND ]
+## Transitions:
+-- On TRUE shift to state 3
+-- On STRING shift to state 4
+-- On REGEX shift to state 5
+-- On NOT shift to state 6
+-- On NIL shift to state 7
+-- On MINUS shift to state 8
+-- On LPAREN shift to state 9
+-- On LBRACKET shift to state 10
+-- On LBRACE shift to state 11
+-- On INT shift to state 12
+-- On IDENT shift to state 13
+-- On FN shift to state 14
+-- On FLOAT shift to state 24
+-- On FALSE shift to state 25
+-- On unary_expr shift to state 26
+-- On primary_expr shift to state 27
+-- On postfix_expr shift to state 28
+-- On or_expr shift to state 30
+-- On mul_expr shift to state 32
+-- On match_expr shift to state 39
+-- On expr shift to state 75
+-- On concat_expr shift to state 44
+-- On cmp_expr shift to state 47
+-- On and_expr shift to state 71
+-- On add_expr shift to state 50
+## Reductions:
+
+State 75:
+## Known stack suffix:
+## postfix_expr LBRACKET expr
+## LR(1) items:
+postfix_expr -> postfix_expr LBRACKET expr . RBRACKET [ STAR SLASH RPAREN RBRACKET RBRACE PLUSPLUS PLUS PERCENT OR NOT_MATCH_OP NEWLINE NEQ MINUS MATCH_OP LT LPAREN LE LBRACKET LBRACE GT GE EQEQ EOF COMMA COLON AND ]
+## Transitions:
+-- On RBRACKET shift to state 76
+## Reductions:
+
+State 76:
+## Known stack suffix:
+## postfix_expr LBRACKET expr RBRACKET
+## LR(1) items:
+postfix_expr -> postfix_expr LBRACKET expr RBRACKET . [ STAR SLASH RPAREN RBRACKET RBRACE PLUSPLUS PLUS PERCENT OR NOT_MATCH_OP NEWLINE NEQ MINUS MATCH_OP LT LPAREN LE LBRACKET LBRACE GT GE EQEQ EOF COMMA COLON AND ]
+## Transitions:
+## Reductions:
+-- On STAR SLASH RPAREN RBRACKET RBRACE PLUSPLUS PLUS PERCENT OR NOT_MATCH_OP NEWLINE NEQ MINUS MATCH_OP LT LPAREN LE LBRACKET LBRACE GT GE EQEQ EOF COMMA COLON AND
+--   reduce production postfix_expr -> postfix_expr LBRACKET expr RBRACKET
+
+State 77:
+## Known stack suffix:
+## RETURN expr
+## LR(1) items:
+stmt -> RETURN expr . [ RBRACE NEWLINE EOF ]
+## Transitions:
+## Reductions:
+-- On RBRACE NEWLINE EOF
+--   reduce production stmt -> RETURN expr
+
+State 78:
+## Known stack suffix:
+## REC
+## LR(1) items:
+stmt -> REC . FN IDENT LPAREN param_list RPAREN block [ RBRACE NEWLINE EOF ]
+## Transitions:
+-- On FN shift to state 79
+## Reductions:
+
+State 79:
+## Known stack suffix:
+## REC FN
+## LR(1) items:
+stmt -> REC FN . IDENT LPAREN param_list RPAREN block [ RBRACE NEWLINE EOF ]
+## Transitions:
+-- On IDENT shift to state 80
+## Reductions:
+
+State 80:
+## Known stack suffix:
+## REC FN IDENT
+## LR(1) items:
+stmt -> REC FN IDENT . LPAREN param_list RPAREN block [ RBRACE NEWLINE EOF ]
+## Transitions:
+-- On LPAREN shift to state 81
+## Reductions:
+
+State 81:
+## Known stack suffix:
+## REC FN IDENT LPAREN
+## LR(1) items:
+stmt -> REC FN IDENT LPAREN . param_list RPAREN block [ RBRACE NEWLINE EOF ]
+## Transitions:
+-- On IDENT shift to state 16
+-- On param_list shift to state 82
+## Reductions:
+-- On RPAREN
+--   reduce production param_list ->
+
+State 82:
+## Known stack suffix:
+## REC FN IDENT LPAREN param_list
+## LR(1) items:
+stmt -> REC FN IDENT LPAREN param_list . RPAREN block [ RBRACE NEWLINE EOF ]
+## Transitions:
+-- On RPAREN shift to state 83
+## Reductions:
+
+State 83:
+## Known stack suffix:
+## REC FN IDENT LPAREN param_list RPAREN
+## LR(1) items:
+stmt -> REC FN IDENT LPAREN param_list RPAREN . block [ RBRACE NEWLINE EOF ]
+## Transitions:
+-- On LBRACE shift to state 21
+-- On block shift to state 84
+## Reductions:
+
+State 84:
+## Known stack suffix:
+## REC FN IDENT LPAREN param_list RPAREN block
+## LR(1) items:
+stmt -> REC FN IDENT LPAREN param_list RPAREN block . [ RBRACE NEWLINE EOF ]
+## Transitions:
+## Reductions:
+-- On RBRACE NEWLINE EOF
+--   reduce production stmt -> REC FN IDENT LPAREN param_list RPAREN block
+
+State 85:
+## Known stack suffix:
+## sep_lines NEWLINE
+## LR(1) items:
+sep_lines -> sep_lines NEWLINE . [ WHILE TRUE STRING RETURN REGEX REC RBRACE NOT NIL NEWLINE MINUS LPAREN LET LBRACKET LBRACE INT IF IDENT FOR FN FLOAT FALSE EOF ]
+## Transitions:
+## Reductions:
+-- On WHILE TRUE STRING RETURN REGEX REC RBRACE NOT NIL NEWLINE MINUS LPAREN LET LBRACKET LBRACE INT IF IDENT FOR FN FLOAT FALSE EOF
+--   reduce production sep_lines -> sep_lines NEWLINE
+
+State 86:
+## Known stack suffix:
+## LET
+## LR(1) items:
+stmt -> LET . IDENT EQUALS expr [ RBRACE NEWLINE EOF ]
+## Transitions:
+-- On IDENT shift to state 87
+## Reductions:
+
+State 87:
+## Known stack suffix:
+## LET IDENT
+## LR(1) items:
+stmt -> LET IDENT . EQUALS expr [ RBRACE NEWLINE EOF ]
+## Transitions:
+-- On EQUALS shift to state 88
+## Reductions:
+
+State 88:
+## Known stack suffix:
+## LET IDENT EQUALS
+## LR(1) items:
+stmt -> LET IDENT EQUALS . expr [ RBRACE NEWLINE EOF ]
+## Transitions:
+-- On TRUE shift to state 3
+-- On STRING shift to state 4
+-- On REGEX shift to state 5
+-- On NOT shift to state 6
+-- On NIL shift to state 7
+-- On MINUS shift to state 8
+-- On LPAREN shift to state 9
+-- On LBRACKET shift to state 10
+-- On LBRACE shift to state 11
+-- On INT shift to state 12
+-- On IDENT shift to state 13
+-- On FN shift to state 14
+-- On FLOAT shift to state 24
+-- On FALSE shift to state 25
+-- On unary_expr shift to state 26
+-- On primary_expr shift to state 27
+-- On postfix_expr shift to state 28
+-- On or_expr shift to state 30
+-- On mul_expr shift to state 32
+-- On match_expr shift to state 39
+-- On expr shift to state 89
+-- On concat_expr shift to state 44
+-- On cmp_expr shift to state 47
+-- On and_expr shift to state 71
+-- On add_expr shift to state 50
+## Reductions:
+
+State 89:
+## Known stack suffix:
+## LET IDENT EQUALS expr
+## LR(1) items:
+stmt -> LET IDENT EQUALS expr . [ RBRACE NEWLINE EOF ]
+## Transitions:
+## Reductions:
+-- On RBRACE NEWLINE EOF
+--   reduce production stmt -> LET IDENT EQUALS expr
+
+State 90:
+## Known stack suffix:
+## IF
+## LR(1) items:
+stmt -> IF . expr block [ RBRACE NEWLINE EOF ]
+stmt -> IF . expr block ELSE block [ RBRACE NEWLINE EOF ]
+stmt -> IF . expr block ELSE else_if [ RBRACE NEWLINE EOF ]
+## Transitions:
+-- On TRUE shift to state 3
+-- On STRING shift to state 4
+-- On REGEX shift to state 5
+-- On NOT shift to state 6
+-- On NIL shift to state 7
+-- On MINUS shift to state 8
+-- On LPAREN shift to state 9
+-- On LBRACKET shift to state 10
+-- On LBRACE shift to state 11
+-- On INT shift to state 12
+-- On IDENT shift to state 13
+-- On FN shift to state 14
+-- On FLOAT shift to state 24
+-- On FALSE shift to state 25
+-- On unary_expr shift to state 26
+-- On primary_expr shift to state 27
+-- On postfix_expr shift to state 28
+-- On or_expr shift to state 30
+-- On mul_expr shift to state 32
+-- On match_expr shift to state 39
+-- On expr shift to state 91
+-- On concat_expr shift to state 44
+-- On cmp_expr shift to state 47
+-- On and_expr shift to state 71
+-- On add_expr shift to state 50
+## Reductions:
+
+State 91:
+## Known stack suffix:
+## IF expr
+## LR(1) items:
+stmt -> IF expr . block [ RBRACE NEWLINE EOF ]
+stmt -> IF expr . block ELSE block [ RBRACE NEWLINE EOF ]
+stmt -> IF expr . block ELSE else_if [ RBRACE NEWLINE EOF ]
+## Transitions:
+-- On LBRACE shift to state 21
+-- On block shift to state 92
+## Reductions:
+
+State 92:
+## Known stack suffix:
+## IF expr block
+## LR(1) items:
+stmt -> IF expr block . [ RBRACE NEWLINE EOF ]
+stmt -> IF expr block . ELSE block [ RBRACE NEWLINE EOF ]
+stmt -> IF expr block . ELSE else_if [ RBRACE NEWLINE EOF ]
+## Transitions:
+-- On ELSE shift to state 93
+## Reductions:
+-- On RBRACE NEWLINE EOF
+--   reduce production stmt -> IF expr block
+
+State 93:
+## Known stack suffix:
+## IF expr block ELSE
+## LR(1) items:
+stmt -> IF expr block ELSE . block [ RBRACE NEWLINE EOF ]
+stmt -> IF expr block ELSE . else_if [ RBRACE NEWLINE EOF ]
+## Transitions:
+-- On LBRACE shift to state 21
+-- On IF shift to state 94
+-- On else_if shift to state 100
+-- On block shift to state 101
+## Reductions:
+
+State 94:
+## Known stack suffix:
+## IF
+## LR(1) items:
+else_if -> IF . expr block [ RBRACE NEWLINE EOF ]
+else_if -> IF . expr block ELSE block [ RBRACE NEWLINE EOF ]
+else_if -> IF . expr block ELSE else_if [ RBRACE NEWLINE EOF ]
+## Transitions:
+-- On TRUE shift to state 3
+-- On STRING shift to state 4
+-- On REGEX shift to state 5
+-- On NOT shift to state 6
+-- On NIL shift to state 7
+-- On MINUS shift to state 8
+-- On LPAREN shift to state 9
+-- On LBRACKET shift to state 10
+-- On LBRACE shift to state 11
+-- On INT shift to state 12
+-- On IDENT shift to state 13
+-- On FN shift to state 14
+-- On FLOAT shift to state 24
+-- On FALSE shift to state 25
+-- On unary_expr shift to state 26
+-- On primary_expr shift to state 27
+-- On postfix_expr shift to state 28
+-- On or_expr shift to state 30
+-- On mul_expr shift to state 32
+-- On match_expr shift to state 39
+-- On expr shift to state 95
+-- On concat_expr shift to state 44
+-- On cmp_expr shift to state 47
+-- On and_expr shift to state 71
+-- On add_expr shift to state 50
+## Reductions:
+
+State 95:
+## Known stack suffix:
+## IF expr
+## LR(1) items:
+else_if -> IF expr . block [ RBRACE NEWLINE EOF ]
+else_if -> IF expr . block ELSE block [ RBRACE NEWLINE EOF ]
+else_if -> IF expr . block ELSE else_if [ RBRACE NEWLINE EOF ]
+## Transitions:
+-- On LBRACE shift to state 21
+-- On block shift to state 96
+## Reductions:
+
+State 96:
+## Known stack suffix:
+## IF expr block
+## LR(1) items:
+else_if -> IF expr block . [ RBRACE NEWLINE EOF ]
+else_if -> IF expr block . ELSE block [ RBRACE NEWLINE EOF ]
+else_if -> IF expr block . ELSE else_if [ RBRACE NEWLINE EOF ]
+## Transitions:
+-- On ELSE shift to state 97
+## Reductions:
+-- On RBRACE NEWLINE EOF
+--   reduce production else_if -> IF expr block
+
+State 97:
+## Known stack suffix:
+## IF expr block ELSE
+## LR(1) items:
+else_if -> IF expr block ELSE . block [ RBRACE NEWLINE EOF ]
+else_if -> IF expr block ELSE . else_if [ RBRACE NEWLINE EOF ]
+## Transitions:
+-- On LBRACE shift to state 21
+-- On IF shift to state 94
+-- On else_if shift to state 98
+-- On block shift to state 99
+## Reductions:
+
+State 98:
+## Known stack suffix:
+## IF expr block ELSE else_if
+## LR(1) items:
+else_if -> IF expr block ELSE else_if . [ RBRACE NEWLINE EOF ]
+## Transitions:
+## Reductions:
+-- On RBRACE NEWLINE EOF
+--   reduce production else_if -> IF expr block ELSE else_if
+
+State 99:
+## Known stack suffix:
+## IF expr block ELSE block
+## LR(1) items:
+else_if -> IF expr block ELSE block . [ RBRACE NEWLINE EOF ]
+## Transitions:
+## Reductions:
+-- On RBRACE NEWLINE EOF
+--   reduce production else_if -> IF expr block ELSE block
+
+State 100:
+## Known stack suffix:
+## IF expr block ELSE else_if
+## LR(1) items:
+stmt -> IF expr block ELSE else_if . [ RBRACE NEWLINE EOF ]
+## Transitions:
+## Reductions:
+-- On RBRACE NEWLINE EOF
+--   reduce production stmt -> IF expr block ELSE else_if
+
+State 101:
+## Known stack suffix:
+## IF expr block ELSE block
+## LR(1) items:
+stmt -> IF expr block ELSE block . [ RBRACE NEWLINE EOF ]
+## Transitions:
+## Reductions:
+-- On RBRACE NEWLINE EOF
+--   reduce production stmt -> IF expr block ELSE block
+
+State 102:
+## Known stack suffix:
+## IDENT
+## LR(1) items:
+primary_expr -> IDENT . [ STAR SLASH REGEX_REPLACE RBRACE PLUSPLUS PLUS PERCENT OR NOT_MATCH_OP NEWLINE NEQ MINUS MATCH_OP LT LPAREN LE LBRACKET GT GE EQEQ EOF AND ]
+stmt -> IDENT . EQUALS expr [ RBRACE NEWLINE EOF ]
+## Transitions:
+-- On EQUALS shift to state 103
+## Reductions:
+-- On STAR SLASH REGEX_REPLACE RBRACE PLUSPLUS PLUS PERCENT OR NOT_MATCH_OP NEWLINE NEQ MINUS MATCH_OP LT LPAREN LE LBRACKET GT GE EQEQ EOF AND
+--   reduce production primary_expr -> IDENT
+
+State 103:
+## Known stack suffix:
+## IDENT EQUALS
+## LR(1) items:
+stmt -> IDENT EQUALS . expr [ RBRACE NEWLINE EOF ]
+## Transitions:
+-- On TRUE shift to state 3
+-- On STRING shift to state 4
+-- On REGEX shift to state 5
+-- On NOT shift to state 6
+-- On NIL shift to state 7
+-- On MINUS shift to state 8
+-- On LPAREN shift to state 9
+-- On LBRACKET shift to state 10
+-- On LBRACE shift to state 11
+-- On INT shift to state 12
+-- On IDENT shift to state 13
+-- On FN shift to state 14
+-- On FLOAT shift to state 24
+-- On FALSE shift to state 25
+-- On unary_expr shift to state 26
+-- On primary_expr shift to state 27
+-- On postfix_expr shift to state 28
+-- On or_expr shift to state 30
+-- On mul_expr shift to state 32
+-- On match_expr shift to state 39
+-- On expr shift to state 104
+-- On concat_expr shift to state 44
+-- On cmp_expr shift to state 47
+-- On and_expr shift to state 71
+-- On add_expr shift to state 50
+## Reductions:
+
+State 104:
+## Known stack suffix:
+## IDENT EQUALS expr
+## LR(1) items:
+stmt -> IDENT EQUALS expr . [ RBRACE NEWLINE EOF ]
+## Transitions:
+## Reductions:
+-- On RBRACE NEWLINE EOF
+--   reduce production stmt -> IDENT EQUALS expr
+
+State 105:
+## Known stack suffix:
+## FOR
+## LR(1) items:
+stmt -> FOR . IDENT IN expr block [ RBRACE NEWLINE EOF ]
+## Transitions:
+-- On IDENT shift to state 106
+## Reductions:
+
+State 106:
+## Known stack suffix:
+## FOR IDENT
+## LR(1) items:
+stmt -> FOR IDENT . IN expr block [ RBRACE NEWLINE EOF ]
+## Transitions:
+-- On IN shift to state 107
+## Reductions:
+
+State 107:
+## Known stack suffix:
+## FOR IDENT IN
+## LR(1) items:
+stmt -> FOR IDENT IN . expr block [ RBRACE NEWLINE EOF ]
+## Transitions:
+-- On TRUE shift to state 3
+-- On STRING shift to state 4
+-- On REGEX shift to state 5
+-- On NOT shift to state 6
+-- On NIL shift to state 7
+-- On MINUS shift to state 8
+-- On LPAREN shift to state 9
+-- On LBRACKET shift to state 10
+-- On LBRACE shift to state 11
+-- On INT shift to state 12
+-- On IDENT shift to state 13
+-- On FN shift to state 14
+-- On FLOAT shift to state 24
+-- On FALSE shift to state 25
+-- On unary_expr shift to state 26
+-- On primary_expr shift to state 27
+-- On postfix_expr shift to state 28
+-- On or_expr shift to state 30
+-- On mul_expr shift to state 32
+-- On match_expr shift to state 39
+-- On expr shift to state 108
+-- On concat_expr shift to state 44
+-- On cmp_expr shift to state 47
+-- On and_expr shift to state 71
+-- On add_expr shift to state 50
+## Reductions:
+
+State 108:
+## Known stack suffix:
+## FOR IDENT IN expr
+## LR(1) items:
+stmt -> FOR IDENT IN expr . block [ RBRACE NEWLINE EOF ]
+## Transitions:
+-- On LBRACE shift to state 21
+-- On block shift to state 109
+## Reductions:
+
+State 109:
+## Known stack suffix:
+## FOR IDENT IN expr block
+## LR(1) items:
+stmt -> FOR IDENT IN expr block . [ RBRACE NEWLINE EOF ]
+## Transitions:
+## Reductions:
+-- On RBRACE NEWLINE EOF
+--   reduce production stmt -> FOR IDENT IN expr block
+
+State 110:
+## Known stack suffix:
+## FN
+## LR(1) items:
+primary_expr -> FN . LPAREN param_list RPAREN block [ STAR SLASH REGEX_REPLACE RBRACE PLUSPLUS PLUS PERCENT OR NOT_MATCH_OP NEWLINE NEQ MINUS MATCH_OP LT LPAREN LE LBRACKET GT GE EQEQ EOF AND ]
+stmt -> FN . IDENT LPAREN param_list RPAREN block [ RBRACE NEWLINE EOF ]
+## Transitions:
+-- On LPAREN shift to state 15
+-- On IDENT shift to state 111
+## Reductions:
+
+State 111:
+## Known stack suffix:
+## FN IDENT
+## LR(1) items:
+stmt -> FN IDENT . LPAREN param_list RPAREN block [ RBRACE NEWLINE EOF ]
+## Transitions:
+-- On LPAREN shift to state 112
+## Reductions:
+
+State 112:
+## Known stack suffix:
+## FN IDENT LPAREN
+## LR(1) items:
+stmt -> FN IDENT LPAREN . param_list RPAREN block [ RBRACE NEWLINE EOF ]
+## Transitions:
+-- On IDENT shift to state 16
+-- On param_list shift to state 113
+## Reductions:
+-- On RPAREN
+--   reduce production param_list ->
+
+State 113:
+## Known stack suffix:
+## FN IDENT LPAREN param_list
+## LR(1) items:
+stmt -> FN IDENT LPAREN param_list . RPAREN block [ RBRACE NEWLINE EOF ]
+## Transitions:
+-- On RPAREN shift to state 114
+## Reductions:
+
+State 114:
+## Known stack suffix:
+## FN IDENT LPAREN param_list RPAREN
+## LR(1) items:
+stmt -> FN IDENT LPAREN param_list RPAREN . block [ RBRACE NEWLINE EOF ]
+## Transitions:
+-- On LBRACE shift to state 21
+-- On block shift to state 115
+## Reductions:
+
+State 115:
+## Known stack suffix:
+## FN IDENT LPAREN param_list RPAREN block
+## LR(1) items:
+stmt -> FN IDENT LPAREN param_list RPAREN block . [ RBRACE NEWLINE EOF ]
+## Transitions:
+## Reductions:
+-- On RBRACE NEWLINE EOF
+--   reduce production stmt -> FN IDENT LPAREN param_list RPAREN block
+
+State 116:
+## Known stack suffix:
+## LBRACE sep_lines terminated_stmts
+## LR(1) items:
+block -> LBRACE sep_lines terminated_stmts . RBRACE [ STAR SLASH RPAREN REGEX_REPLACE RBRACKET RBRACE PLUSPLUS PLUS PERCENT OR NOT_MATCH_OP NEWLINE NEQ MINUS MATCH_OP LT LPAREN LE LBRACKET LBRACE GT GE EQEQ EOF ELSE COMMA COLON AND ]
+## Transitions:
+-- On RBRACE shift to state 117
+## Reductions:
+
+State 117:
+## Known stack suffix:
+## LBRACE sep_lines terminated_stmts RBRACE
+## LR(1) items:
+block -> LBRACE sep_lines terminated_stmts RBRACE . [ STAR SLASH RPAREN REGEX_REPLACE RBRACKET RBRACE PLUSPLUS PLUS PERCENT OR NOT_MATCH_OP NEWLINE NEQ MINUS MATCH_OP LT LPAREN LE LBRACKET LBRACE GT GE EQEQ EOF ELSE COMMA COLON AND ]
+## Transitions:
+## Reductions:
+-- On STAR SLASH RPAREN REGEX_REPLACE RBRACKET RBRACE PLUSPLUS PLUS PERCENT OR NOT_MATCH_OP NEWLINE NEQ MINUS MATCH_OP LT LPAREN LE LBRACKET LBRACE GT GE EQEQ EOF ELSE COMMA COLON AND
+--   reduce production block -> LBRACE sep_lines terminated_stmts RBRACE
+
+State 118:
+## Known stack suffix:
+## stmt
+## LR(1) items:
+terminated_stmts -> stmt . sep_lines [ RBRACE EOF ]
+terminated_stmts -> stmt . sep terminated_stmts [ RBRACE EOF ]
+## Transitions:
+-- On NEWLINE shift to state 119
+-- On sep_lines shift to state 120
+-- On sep shift to state 121
+## Reductions:
+-- On RBRACE NEWLINE EOF
+--   reduce production sep_lines ->
+** Conflict on NEWLINE
+
+State 119:
+## Known stack suffix:
+## NEWLINE
+## LR(1) items:
+sep -> NEWLINE . [ WHILE TRUE STRING RETURN REGEX REC RBRACE NOT NIL NEWLINE MINUS LPAREN LET LBRACKET LBRACE INT IF IDENT FOR FN FLOAT FALSE EOF ]
+## Transitions:
+## Reductions:
+-- On WHILE TRUE STRING RETURN REGEX REC RBRACE NOT NIL NEWLINE MINUS LPAREN LET LBRACKET LBRACE INT IF IDENT FOR FN FLOAT FALSE EOF
+--   reduce production sep -> NEWLINE
+
+State 120:
+## Known stack suffix:
+## stmt sep_lines
+## LR(1) items:
+sep_lines -> sep_lines . NEWLINE [ RBRACE NEWLINE EOF ]
+terminated_stmts -> stmt sep_lines . [ RBRACE EOF ]
+## Transitions:
+-- On NEWLINE shift to state 85
+## Reductions:
+-- On RBRACE EOF
+--   reduce production terminated_stmts -> stmt sep_lines
+
+State 121:
+## Known stack suffix:
+## stmt sep
+## LR(1) items:
+sep -> sep . NEWLINE [ WHILE TRUE STRING RETURN REGEX REC RBRACE NOT NIL NEWLINE MINUS LPAREN LET LBRACKET LBRACE INT IF IDENT FOR FN FLOAT FALSE EOF ]
+terminated_stmts -> stmt sep . terminated_stmts [ RBRACE EOF ]
+## Transitions:
+-- On WHILE shift to state 2
+-- On TRUE shift to state 3
+-- On STRING shift to state 4
+-- On RETURN shift to state 23
+-- On REGEX shift to state 5
+-- On REC shift to state 78
+-- On NOT shift to state 6
+-- On NIL shift to state 7
+-- On NEWLINE shift to state 122
+-- On MINUS shift to state 8
+-- On LPAREN shift to state 9
+-- On LET shift to state 86
+-- On LBRACKET shift to state 10
+-- On LBRACE shift to state 11
+-- On INT shift to state 12
+-- On IF shift to state 90
+-- On IDENT shift to state 102
+-- On FOR shift to state 105
+-- On FN shift to state 110
+-- On FLOAT shift to state 24
+-- On FALSE shift to state 25
+-- On unary_expr shift to state 26
+-- On terminated_stmts shift to state 123
+-- On stmt shift to state 118
+-- On primary_expr shift to state 27
+-- On postfix_expr shift to state 124
+-- On or_expr shift to state 30
+-- On mul_expr shift to state 32
+-- On match_expr shift to state 39
+-- On expr shift to state 131
+-- On concat_expr shift to state 44
+-- On cmp_expr shift to state 47
+-- On and_expr shift to state 71
+-- On add_expr shift to state 50
+## Reductions:
+-- On RBRACE EOF
+--   reduce production terminated_stmts ->
+
+State 122:
+## Known stack suffix:
+## sep NEWLINE
+## LR(1) items:
+sep -> sep NEWLINE . [ WHILE TRUE STRING RETURN REGEX REC RBRACE NOT NIL NEWLINE MINUS LPAREN LET LBRACKET LBRACE INT IF IDENT FOR FN FLOAT FALSE EOF ]
+## Transitions:
+## Reductions:
+-- On WHILE TRUE STRING RETURN REGEX REC RBRACE NOT NIL NEWLINE MINUS LPAREN LET LBRACKET LBRACE INT IF IDENT FOR FN FLOAT FALSE EOF
+--   reduce production sep -> sep NEWLINE
+
+State 123:
+## Known stack suffix:
+## stmt sep terminated_stmts
+## LR(1) items:
+terminated_stmts -> stmt sep terminated_stmts . [ RBRACE EOF ]
+## Transitions:
+## Reductions:
+-- On RBRACE EOF
+--   reduce production terminated_stmts -> stmt sep terminated_stmts
+
+State 124:
+## Known stack suffix:
+## postfix_expr
+## LR(1) items:
+postfix_expr -> postfix_expr . LPAREN arg_list RPAREN [ STAR SLASH REGEX_REPLACE RBRACE PLUSPLUS PLUS PERCENT OR NOT_MATCH_OP NEWLINE NEQ MINUS MATCH_OP LT LPAREN LE LBRACKET GT GE EQEQ EOF AND ]
+postfix_expr -> postfix_expr . LBRACKET expr RBRACKET [ STAR SLASH REGEX_REPLACE RBRACE PLUSPLUS PLUS PERCENT OR NOT_MATCH_OP NEWLINE NEQ MINUS MATCH_OP LT LPAREN LE LBRACKET GT GE EQEQ EOF AND ]
+stmt -> postfix_expr . LBRACKET expr RBRACKET EQUALS expr [ RBRACE NEWLINE EOF ]
+stmt -> postfix_expr . REGEX_REPLACE [ RBRACE NEWLINE EOF ]
+unary_expr -> postfix_expr . [ STAR SLASH RBRACE PLUSPLUS PLUS PERCENT OR NOT_MATCH_OP NEWLINE NEQ MINUS MATCH_OP LT LE GT GE EQEQ EOF AND ]
+## Transitions:
+-- On REGEX_REPLACE shift to state 125
+-- On LPAREN shift to state 29
+-- On LBRACKET shift to state 126
+## Reductions:
+-- On STAR SLASH RBRACE PLUSPLUS PLUS PERCENT OR NOT_MATCH_OP NEWLINE NEQ MINUS MATCH_OP LT LE GT GE EQEQ EOF AND
+--   reduce production unary_expr -> postfix_expr
+
+State 125:
+## Known stack suffix:
+## postfix_expr REGEX_REPLACE
+## LR(1) items:
+stmt -> postfix_expr REGEX_REPLACE . [ RBRACE NEWLINE EOF ]
+## Transitions:
+## Reductions:
+-- On RBRACE NEWLINE EOF
+--   reduce production stmt -> postfix_expr REGEX_REPLACE
+
+State 126:
+## Known stack suffix:
+## postfix_expr LBRACKET
+## LR(1) items:
+postfix_expr -> postfix_expr LBRACKET . expr RBRACKET [ STAR SLASH REGEX_REPLACE RBRACE PLUSPLUS PLUS PERCENT OR NOT_MATCH_OP NEWLINE NEQ MINUS MATCH_OP LT LPAREN LE LBRACKET GT GE EQEQ EOF AND ]
+stmt -> postfix_expr LBRACKET . expr RBRACKET EQUALS expr [ RBRACE NEWLINE EOF ]
+## Transitions:
+-- On TRUE shift to state 3
+-- On STRING shift to state 4
+-- On REGEX shift to state 5
+-- On NOT shift to state 6
+-- On NIL shift to state 7
+-- On MINUS shift to state 8
+-- On LPAREN shift to state 9
+-- On LBRACKET shift to state 10
+-- On LBRACE shift to state 11
+-- On INT shift to state 12
+-- On IDENT shift to state 13
+-- On FN shift to state 14
+-- On FLOAT shift to state 24
+-- On FALSE shift to state 25
+-- On unary_expr shift to state 26
+-- On primary_expr shift to state 27
+-- On postfix_expr shift to state 28
+-- On or_expr shift to state 30
+-- On mul_expr shift to state 32
+-- On match_expr shift to state 39
+-- On expr shift to state 127
+-- On concat_expr shift to state 44
+-- On cmp_expr shift to state 47
+-- On and_expr shift to state 71
+-- On add_expr shift to state 50
+## Reductions:
+
+State 127:
+## Known stack suffix:
+## postfix_expr LBRACKET expr
+## LR(1) items:
+postfix_expr -> postfix_expr LBRACKET expr . RBRACKET [ STAR SLASH REGEX_REPLACE RBRACE PLUSPLUS PLUS PERCENT OR NOT_MATCH_OP NEWLINE NEQ MINUS MATCH_OP LT LPAREN LE LBRACKET GT GE EQEQ EOF AND ]
+stmt -> postfix_expr LBRACKET expr . RBRACKET EQUALS expr [ RBRACE NEWLINE EOF ]
+## Transitions:
+-- On RBRACKET shift to state 128
+## Reductions:
+
+State 128:
+## Known stack suffix:
+## postfix_expr LBRACKET expr RBRACKET
+## LR(1) items:
+postfix_expr -> postfix_expr LBRACKET expr RBRACKET . [ STAR SLASH REGEX_REPLACE RBRACE PLUSPLUS PLUS PERCENT OR NOT_MATCH_OP NEWLINE NEQ MINUS MATCH_OP LT LPAREN LE LBRACKET GT GE EQEQ EOF AND ]
+stmt -> postfix_expr LBRACKET expr RBRACKET . EQUALS expr [ RBRACE NEWLINE EOF ]
+## Transitions:
+-- On EQUALS shift to state 129
+## Reductions:
+-- On STAR SLASH REGEX_REPLACE RBRACE PLUSPLUS PLUS PERCENT OR NOT_MATCH_OP NEWLINE NEQ MINUS MATCH_OP LT LPAREN LE LBRACKET GT GE EQEQ EOF AND
+--   reduce production postfix_expr -> postfix_expr LBRACKET expr RBRACKET
+
+State 129:
+## Known stack suffix:
+## postfix_expr LBRACKET expr RBRACKET EQUALS
+## LR(1) items:
+stmt -> postfix_expr LBRACKET expr RBRACKET EQUALS . expr [ RBRACE NEWLINE EOF ]
+## Transitions:
+-- On TRUE shift to state 3
+-- On STRING shift to state 4
+-- On REGEX shift to state 5
+-- On NOT shift to state 6
+-- On NIL shift to state 7
+-- On MINUS shift to state 8
+-- On LPAREN shift to state 9
+-- On LBRACKET shift to state 10
+-- On LBRACE shift to state 11
+-- On INT shift to state 12
+-- On IDENT shift to state 13
+-- On FN shift to state 14
+-- On FLOAT shift to state 24
+-- On FALSE shift to state 25
+-- On unary_expr shift to state 26
+-- On primary_expr shift to state 27
+-- On postfix_expr shift to state 28
+-- On or_expr shift to state 30
+-- On mul_expr shift to state 32
+-- On match_expr shift to state 39
+-- On expr shift to state 130
+-- On concat_expr shift to state 44
+-- On cmp_expr shift to state 47
+-- On and_expr shift to state 71
+-- On add_expr shift to state 50
+## Reductions:
+
+State 130:
+## Known stack suffix:
+## postfix_expr LBRACKET expr RBRACKET EQUALS expr
+## LR(1) items:
+stmt -> postfix_expr LBRACKET expr RBRACKET EQUALS expr . [ RBRACE NEWLINE EOF ]
+## Transitions:
+## Reductions:
+-- On RBRACE NEWLINE EOF
+--   reduce production stmt -> postfix_expr LBRACKET expr RBRACKET EQUALS expr
+
+State 131:
+## Known stack suffix:
+## expr
+## LR(1) items:
+stmt -> expr . [ RBRACE NEWLINE EOF ]
+## Transitions:
+## Reductions:
+-- On RBRACE NEWLINE EOF
+--   reduce production stmt -> expr
+
+State 132:
+## Known stack suffix:
+## FN LPAREN param_list RPAREN block
+## LR(1) items:
+primary_expr -> FN LPAREN param_list RPAREN block . [ STAR SLASH RPAREN REGEX_REPLACE RBRACKET RBRACE PLUSPLUS PLUS PERCENT OR NOT_MATCH_OP NEWLINE NEQ MINUS MATCH_OP LT LPAREN LE LBRACKET LBRACE GT GE EQEQ EOF COMMA COLON AND ]
+## Transitions:
+## Reductions:
+-- On STAR SLASH RPAREN REGEX_REPLACE RBRACKET RBRACE PLUSPLUS PLUS PERCENT OR NOT_MATCH_OP NEWLINE NEQ MINUS MATCH_OP LT LPAREN LE LBRACKET LBRACE GT GE EQEQ EOF COMMA COLON AND
+--   reduce production primary_expr -> FN LPAREN param_list RPAREN block
+
+State 133:
+## Known stack suffix:
+## LBRACE hash_pairs
+## LR(1) items:
+primary_expr -> LBRACE hash_pairs . RBRACE [ STAR SLASH RPAREN REGEX_REPLACE RBRACKET RBRACE PLUSPLUS PLUS PERCENT OR NOT_MATCH_OP NEWLINE NEQ MINUS MATCH_OP LT LPAREN LE LBRACKET LBRACE GT GE EQEQ EOF COMMA COLON AND ]
+## Transitions:
+-- On RBRACE shift to state 134
+## Reductions:
+
+State 134:
+## Known stack suffix:
+## LBRACE hash_pairs RBRACE
+## LR(1) items:
+primary_expr -> LBRACE hash_pairs RBRACE . [ STAR SLASH RPAREN REGEX_REPLACE RBRACKET RBRACE PLUSPLUS PLUS PERCENT OR NOT_MATCH_OP NEWLINE NEQ MINUS MATCH_OP LT LPAREN LE LBRACKET LBRACE GT GE EQEQ EOF COMMA COLON AND ]
+## Transitions:
+## Reductions:
+-- On STAR SLASH RPAREN REGEX_REPLACE RBRACKET RBRACE PLUSPLUS PLUS PERCENT OR NOT_MATCH_OP NEWLINE NEQ MINUS MATCH_OP LT LPAREN LE LBRACKET LBRACE GT GE EQEQ EOF COMMA COLON AND
+--   reduce production primary_expr -> LBRACE hash_pairs RBRACE
+
+State 135:
+## Known stack suffix:
+## expr
+## LR(1) items:
+hash_pairs -> expr . COLON expr [ RBRACE ]
+hash_pairs -> expr . COLON expr COMMA hash_pairs [ RBRACE ]
+## Transitions:
+-- On COLON shift to state 136
+## Reductions:
+
+State 136:
+## Known stack suffix:
+## expr COLON
+## LR(1) items:
+hash_pairs -> expr COLON . expr [ RBRACE ]
+hash_pairs -> expr COLON . expr COMMA hash_pairs [ RBRACE ]
+## Transitions:
+-- On TRUE shift to state 3
+-- On STRING shift to state 4
+-- On REGEX shift to state 5
+-- On NOT shift to state 6
+-- On NIL shift to state 7
+-- On MINUS shift to state 8
+-- On LPAREN shift to state 9
+-- On LBRACKET shift to state 10
+-- On LBRACE shift to state 11
+-- On INT shift to state 12
+-- On IDENT shift to state 13
+-- On FN shift to state 14
+-- On FLOAT shift to state 24
+-- On FALSE shift to state 25
+-- On unary_expr shift to state 26
+-- On primary_expr shift to state 27
+-- On postfix_expr shift to state 28
+-- On or_expr shift to state 30
+-- On mul_expr shift to state 32
+-- On match_expr shift to state 39
+-- On expr shift to state 137
+-- On concat_expr shift to state 44
+-- On cmp_expr shift to state 47
+-- On and_expr shift to state 71
+-- On add_expr shift to state 50
+## Reductions:
+
+State 137:
+## Known stack suffix:
+## expr COLON expr
+## LR(1) items:
+hash_pairs -> expr COLON expr . [ RBRACE ]
+hash_pairs -> expr COLON expr . COMMA hash_pairs [ RBRACE ]
+## Transitions:
+-- On COMMA shift to state 138
+## Reductions:
+-- On RBRACE
+--   reduce production hash_pairs -> expr COLON expr
+
+State 138:
+## Known stack suffix:
+## expr COLON expr COMMA
+## LR(1) items:
+hash_pairs -> expr COLON expr COMMA . hash_pairs [ RBRACE ]
+## Transitions:
+-- On TRUE shift to state 3
+-- On STRING shift to state 4
+-- On REGEX shift to state 5
+-- On NOT shift to state 6
+-- On NIL shift to state 7
+-- On MINUS shift to state 8
+-- On LPAREN shift to state 9
+-- On LBRACKET shift to state 10
+-- On LBRACE shift to state 11
+-- On INT shift to state 12
+-- On IDENT shift to state 13
+-- On FN shift to state 14
+-- On FLOAT shift to state 24
+-- On FALSE shift to state 25
+-- On unary_expr shift to state 26
+-- On primary_expr shift to state 27
+-- On postfix_expr shift to state 28
+-- On or_expr shift to state 30
+-- On mul_expr shift to state 32
+-- On match_expr shift to state 39
+-- On hash_pairs shift to state 139
+-- On expr shift to state 135
+-- On concat_expr shift to state 44
+-- On cmp_expr shift to state 47
+-- On and_expr shift to state 71
+-- On add_expr shift to state 50
+## Reductions:
+-- On RBRACE
+--   reduce production hash_pairs ->
+
+State 139:
+## Known stack suffix:
+## expr COLON expr COMMA hash_pairs
+## LR(1) items:
+hash_pairs -> expr COLON expr COMMA hash_pairs . [ RBRACE ]
+## Transitions:
+## Reductions:
+-- On RBRACE
+--   reduce production hash_pairs -> expr COLON expr COMMA hash_pairs
+
+State 140:
+## Known stack suffix:
+## expr
+## LR(1) items:
+array_elems -> expr . [ RBRACKET ]
+array_elems -> expr . COMMA array_elems [ RBRACKET ]
+## Transitions:
+-- On COMMA shift to state 141
+## Reductions:
+-- On RBRACKET
+--   reduce production array_elems -> expr
+
+State 141:
+## Known stack suffix:
+## expr COMMA
+## LR(1) items:
+array_elems -> expr COMMA . array_elems [ RBRACKET ]
+## Transitions:
+-- On TRUE shift to state 3
+-- On STRING shift to state 4
+-- On REGEX shift to state 5
+-- On NOT shift to state 6
+-- On NIL shift to state 7
+-- On MINUS shift to state 8
+-- On LPAREN shift to state 9
+-- On LBRACKET shift to state 10
+-- On LBRACE shift to state 11
+-- On INT shift to state 12
+-- On IDENT shift to state 13
+-- On FN shift to state 14
+-- On FLOAT shift to state 24
+-- On FALSE shift to state 25
+-- On unary_expr shift to state 26
+-- On primary_expr shift to state 27
+-- On postfix_expr shift to state 28
+-- On or_expr shift to state 30
+-- On mul_expr shift to state 32
+-- On match_expr shift to state 39
+-- On expr shift to state 140
+-- On concat_expr shift to state 44
+-- On cmp_expr shift to state 47
+-- On array_elems shift to state 142
+-- On and_expr shift to state 71
+-- On add_expr shift to state 50
+## Reductions:
+-- On RBRACKET
+--   reduce production array_elems ->
+
+State 142:
+## Known stack suffix:
+## expr COMMA array_elems
+## LR(1) items:
+array_elems -> expr COMMA array_elems . [ RBRACKET ]
+## Transitions:
+## Reductions:
+-- On RBRACKET
+--   reduce production array_elems -> expr COMMA array_elems
+
+State 143:
+## Known stack suffix:
+## LBRACKET array_elems
+## LR(1) items:
+primary_expr -> LBRACKET array_elems . RBRACKET [ STAR SLASH RPAREN REGEX_REPLACE RBRACKET RBRACE PLUSPLUS PLUS PERCENT OR NOT_MATCH_OP NEWLINE NEQ MINUS MATCH_OP LT LPAREN LE LBRACKET LBRACE GT GE EQEQ EOF COMMA COLON AND ]
+## Transitions:
+-- On RBRACKET shift to state 144
+## Reductions:
+
+State 144:
+## Known stack suffix:
+## LBRACKET array_elems RBRACKET
+## LR(1) items:
+primary_expr -> LBRACKET array_elems RBRACKET . [ STAR SLASH RPAREN REGEX_REPLACE RBRACKET RBRACE PLUSPLUS PLUS PERCENT OR NOT_MATCH_OP NEWLINE NEQ MINUS MATCH_OP LT LPAREN LE LBRACKET LBRACE GT GE EQEQ EOF COMMA COLON AND ]
+## Transitions:
+## Reductions:
+-- On STAR SLASH RPAREN REGEX_REPLACE RBRACKET RBRACE PLUSPLUS PLUS PERCENT OR NOT_MATCH_OP NEWLINE NEQ MINUS MATCH_OP LT LPAREN LE LBRACKET LBRACE GT GE EQEQ EOF COMMA COLON AND
+--   reduce production primary_expr -> LBRACKET array_elems RBRACKET
+
+State 145:
+## Known stack suffix:
+## LPAREN expr
+## LR(1) items:
+primary_expr -> LPAREN expr . RPAREN [ STAR SLASH RPAREN REGEX_REPLACE RBRACKET RBRACE PLUSPLUS PLUS PERCENT OR NOT_MATCH_OP NEWLINE NEQ MINUS MATCH_OP LT LPAREN LE LBRACKET LBRACE GT GE EQEQ EOF COMMA COLON AND ]
+## Transitions:
+-- On RPAREN shift to state 146
+## Reductions:
+
+State 146:
+## Known stack suffix:
+## LPAREN expr RPAREN
+## LR(1) items:
+primary_expr -> LPAREN expr RPAREN . [ STAR SLASH RPAREN REGEX_REPLACE RBRACKET RBRACE PLUSPLUS PLUS PERCENT OR NOT_MATCH_OP NEWLINE NEQ MINUS MATCH_OP LT LPAREN LE LBRACKET LBRACE GT GE EQEQ EOF COMMA COLON AND ]
+## Transitions:
+## Reductions:
+-- On STAR SLASH RPAREN REGEX_REPLACE RBRACKET RBRACE PLUSPLUS PLUS PERCENT OR NOT_MATCH_OP NEWLINE NEQ MINUS MATCH_OP LT LPAREN LE LBRACKET LBRACE GT GE EQEQ EOF COMMA COLON AND
+--   reduce production primary_expr -> LPAREN expr RPAREN
+
+State 147:
+## Known stack suffix:
+## MINUS unary_expr
+## LR(1) items:
+unary_expr -> MINUS unary_expr . [ STAR SLASH RPAREN RBRACKET RBRACE PLUSPLUS PLUS PERCENT OR NOT_MATCH_OP NEWLINE NEQ MINUS MATCH_OP LT LE LBRACE GT GE EQEQ EOF COMMA COLON AND ]
+## Transitions:
+## Reductions:
+-- On STAR SLASH RPAREN RBRACKET RBRACE PLUSPLUS PLUS PERCENT OR NOT_MATCH_OP NEWLINE NEQ MINUS MATCH_OP LT LE LBRACE GT GE EQEQ EOF COMMA COLON AND
+--   reduce production unary_expr -> MINUS unary_expr
+
+State 148:
+## Known stack suffix:
+## NOT unary_expr
+## LR(1) items:
+unary_expr -> NOT unary_expr . [ STAR SLASH RPAREN RBRACKET RBRACE PLUSPLUS PLUS PERCENT OR NOT_MATCH_OP NEWLINE NEQ MINUS MATCH_OP LT LE LBRACE GT GE EQEQ EOF COMMA COLON AND ]
+## Transitions:
+## Reductions:
+-- On STAR SLASH RPAREN RBRACKET RBRACE PLUSPLUS PLUS PERCENT OR NOT_MATCH_OP NEWLINE NEQ MINUS MATCH_OP LT LE LBRACE GT GE EQEQ EOF COMMA COLON AND
+--   reduce production unary_expr -> NOT unary_expr
+
+State 149:
+## Known stack suffix:
+## WHILE expr
+## LR(1) items:
+stmt -> WHILE expr . block [ RBRACE NEWLINE EOF ]
+## Transitions:
+-- On LBRACE shift to state 21
+-- On block shift to state 150
+## Reductions:
+
+State 150:
+## Known stack suffix:
+## WHILE expr block
+## LR(1) items:
+stmt -> WHILE expr block . [ RBRACE NEWLINE EOF ]
+## Transitions:
+## Reductions:
+-- On RBRACE NEWLINE EOF
+--   reduce production stmt -> WHILE expr block
+
+State 151:
+## Known stack suffix:
+## sep_lines terminated_stmts
+## LR(1) items:
+program -> sep_lines terminated_stmts . EOF [ # ]
+## Transitions:
+-- On EOF shift to state 152
+## Reductions:
+
+State 152:
+## Known stack suffix:
+## sep_lines terminated_stmts EOF
+## LR(1) items:
+program -> sep_lines terminated_stmts EOF . [ # ]
+## Transitions:
+## Reductions:
+-- On #
+--   reduce production program -> sep_lines terminated_stmts EOF
+
+State 153:
+## Known stack suffix:
+## program
+## LR(1) items:
+program' -> program . [ # ]
+## Transitions:
+## Reductions:
+-- On #
+--   accept program
+

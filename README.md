@@ -1,5 +1,13 @@
  # Buoy Multi-Backend Spec (Session Handoff)
 
+  ## Normative Status
+
+  - This README is a planning/handoff document and includes roadmap items.
+  - The implemented language contract is `LANG_SPEC.md`.
+  - Conformance checks are run via `scripts/check-conformance.sh`.
+  - Latest conformance run summary is in `CONFORMANCE_REPORT.md`.
+  - Newcomer docs: `docs/NEWCOMER_GUIDE.md` and `docs/welcome.html`.
+
   ## Summary
 
   Build Buoy as a single-host compiler with gradually added backends.
@@ -18,7 +26,7 @@
   2. Keep current backends (perl, ocaml, go) compiling through unified pipeline.
   3. Implement Python backend v1 with parity for:
 
-  - expressions, assignment, control flow, functions/lambdas
+  - expressions, assignment, control flow, first-order functions
   - core containers currently modeled in AST ([], {}-mapped forms already representable)
   - string/array/hash builtins used by examples
   - regex literals and regex builtins
@@ -74,14 +82,19 @@
 
   - printf "%s", concat ("ass", "hole")
 
-  3. do/end block syntax is supported via reader rewrite:
+  3. Brace block syntax is canonical:
+
+  - if cond { ... } else { ... }
+  - while cond { ... }
+  - for x in xs { ... }
+
+  4. do/end block syntax remains supported as deprecated compatibility sugar:
 
   - if cond do ... end
   - else do
   - else if cond do
-
-  4. Symbols allow - and ?.
-  5. Regex shorthand #"...“ is intended language syntax (must not conflict with comment handling).
+  5. Symbols allow - and ?.
+  6. Regex shorthand #"...“ is intended language syntax (must not conflict with comment handling).
 
   ## Critical Fixes Required Before/With Python Backend
 
@@ -130,7 +143,7 @@
   1. Arithmetic + precedence
   2. Conditionals (if/else if/else)
   3. Loops (while, for in)
-  4. Functions/lambdas + returns
+  4. First-order functions + returns
   5. Collections (array/hash operations currently supported)
   6. String utilities
   7. Regex match/replace/find-all
@@ -138,7 +151,8 @@
 
   - comma arg calls
   - paren grouping
-  - do/end blocks
+  - braces blocks (canonical)
+  - do/end blocks (compatibility)
   - dashed/question symbols
   - #"...“ literals
 
@@ -156,3 +170,58 @@
   3. Python v1 includes core+collections+regex, excluding full async/I/O parity.
   4. Single-file Python output is the default packaging mode.
   5. Tuple AST remains canonical internal representation.
+
+## Perl Host (Current)
+
+Perl output now includes a small host bridge:
+
+- `buoy_host_set(path, value)` registers a host value/function.
+- `host_get(path)` resolves a host value.
+- `host_call(path, args...)` resolves then invokes a host function.
+
+If `BUOY_PERL_HOST` is set, generated Perl loads that file at startup (`do $ENV{BUOY_PERL_HOST}`), so host paths can be registered externally.
+
+Default host file:
+
+- `runtime/perl_host_default.pl`
+
+It currently registers:
+
+- `time/now_s`
+- `time/now_ms`
+- `math/add`
+
+### Buoy host syntax
+
+- `$foo/bar` rewrites to `host_get("foo/bar")`
+- `&foo/bar(...)` rewrites to `host_call("foo/bar", ...)`
+
+## Perl vs Buoy Timing Script
+
+Use:
+
+```bash
+scripts/compare-perl-vs-buoy.sh \
+  --perl examples/bench_sum.pl \
+  --buoy examples/bench_sum.by \
+  --iterations 50
+```
+
+With host file:
+
+```bash
+scripts/compare-perl-vs-buoy.sh \
+  --perl path/to/reference.pl \
+  --buoy path/to/equivalent.by \
+  --host runtime/perl_host_default.pl \
+  --iterations 50
+```
+
+CLI wrapper:
+
+```bash
+buoy path/to/equivalent.by \
+  --benchmark path/to/reference.pl \
+  --iterations 50 \
+  --host runtime/perl_host_default.pl
+```

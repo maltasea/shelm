@@ -1,0 +1,27 @@
+
+** Conflict (shift/reduce) in state 118.
+** Token involved: NEWLINE
+** This state is reached from program after reading:
+
+sep_lines stmt
+
+** The derivations that appear below have the following common factor:
+** (The question mark symbol (?) represents the spot where the derivations begin to differ.)
+
+program 
+sep_lines terminated_stmts EOF 
+          (?)
+
+** In state 118, looking ahead at NEWLINE, shifting is permitted
+** because of the following sub-derivation:
+
+stmt sep terminated_stmts 
+     . NEWLINE 
+
+** In state 118, looking ahead at NEWLINE, reducing production
+** sep_lines ->
+** is permitted because of the following sub-derivation:
+
+stmt sep_lines 
+     sep_lines NEWLINE // lookahead token appears
+     . 

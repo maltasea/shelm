@@ -1,0 +1,24 @@
+let limit = 20000
+let i = 2
+let count = 0
+
+while i <= limit {
+  let j = 2
+  let is_prime = true
+
+  while (j * j) <= i {
+    if (i % j) == 0 {
+      is_prime = false
+      j = i
+    }
+    j = j + 1
+  }
+
+  if is_prime {
+    count = count + 1
+  }
+
+  i = i + 1
+}
+
+println(string_of(count))

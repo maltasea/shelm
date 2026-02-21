@@ -11,8 +11,15 @@
     "else", ELSE;
     "while", WHILE;
     "for", FOR;
+    "rec", REC;
     "in", IN;
     "return", RETURN;
+    "match", MATCH;
+    "case", CASE;
+    "type", TYPE;
+    "enum", ENUM;
+    "break", BREAK;
+    "continue", CONTINUE;
     "true", TRUE;
     "false", FALSE;
     "nil", NIL;
@@ -74,6 +81,7 @@ rule token = parse
   | '}'                { set_expr_end true RBRACE }
   | ','                { set_expr_end false COMMA }
   | ':'                { set_expr_end false COLON }
+  | '_'                { set_expr_end true UNDERSCORE }
   | alpha ident_char*  { let s = Lexing.lexeme lexbuf in
                          match Hashtbl.find_opt keywords s with
                          | Some tok -> set_expr_end (match tok with TRUE | FALSE | NIL -> true | _ -> false) tok

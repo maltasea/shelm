@@ -7,8 +7,8 @@ let y = 3
 println("Sum: " ++ string_of(x + y))
 println("Product: " ++ string_of(x * y))
 
-if x > y do
+if x > y {
   println("x is greater")
-else do
+} else {
   println("y is greater")
-end
+}

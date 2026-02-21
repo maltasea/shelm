@@ -25,14 +25,24 @@ type expr =
   | RegexMatch of expr * string * string  (* expr =~ /pattern/flags *)
   | RegexReplace of expr * string * string * string  (* expr =~ s/pat/repl/flags *)
 
+and match_pattern =
+  | PExpr of expr
+  | PWildcard
+
 and stmt =
+  | TypeDef of string * expr
+  | EnumDef of string * string list
   | Let of string * expr
   | Assign of string * expr
   | IndexAssign of expr * expr * expr  (* target, index, value *)
+  | Match of expr * (match_pattern * stmt list) list
   | If of expr * stmt list * stmt list
   | While of expr * stmt list
   | For of string * expr * stmt list
+  | Break
+  | Continue
   | FnDef of string * string list * stmt list
+  | RecFnDef of string * string list * stmt list
   | Return of expr
   | ExprStmt of expr
 

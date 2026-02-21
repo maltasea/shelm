@@ -9,7 +9,7 @@
 %token <string * string> REGEX
 %token <string * string * string> REGEX_REPLACE
 
-%token LET FN IF ELSE WHILE FOR IN RETURN
+%token LET FN IF ELSE WHILE FOR REC IN RETURN MATCH CASE TYPE ENUM BREAK CONTINUE
 %token TRUE FALSE NIL NOT
 %token AND OR
 %token PLUS MINUS STAR SLASH PERCENT
@@ -17,20 +17,11 @@
 %token EQEQ NEQ LT GT LE GE
 %token EQUALS
 %token MATCH_OP NOT_MATCH_OP
+%token UNDERSCORE
 %token LPAREN RPAREN LBRACKET RBRACKET LBRACE RBRACE
 %token COMMA COLON
 %token NEWLINE
 %token EOF
-
-/* Precedence: lowest to highest */
-%left OR
-%left AND
-%nonassoc EQEQ NEQ LT GT LE GE
-%nonassoc MATCH_OP NOT_MATCH_OP
-%left PLUS MINUS
-%left PLUSPLUS
-%left STAR SLASH PERCENT
-%nonassoc UMINUS UNOT
 
 %start <Ast.program> program
 
@@ -52,8 +43,13 @@ sep:
 
 terminated_stmts:
   | /* empty */                               { [] }
-  | s = stmt sep_lines                        { [s] }
-  | s = stmt sep rest = terminated_stmts      { s :: rest }
+  | s = stmt rest = terminated_tail           { s :: rest }
+  ;
+
+terminated_tail:
+  | /* empty */                               { [] }
+  | sep                                       { [] }
+  | sep s = stmt rest = terminated_tail       { s :: rest }
   ;
 
 block:
@@ -61,21 +57,57 @@ block:
   ;
 
 stmt:
+  | TYPE name = IDENT EQUALS repr = expr            { TypeDef (name, repr) }
+  | ENUM name = IDENT vars = enum_block             { EnumDef (name, vars) }
   | LET name = IDENT EQUALS e = expr            { Let (name, e) }
   | name = IDENT EQUALS e = expr                 { Assign (name, e) }
   | target = postfix_expr LBRACKET idx = expr RBRACKET EQUALS e = expr
     { IndexAssign (target, idx, e) }
   | e = postfix_expr r = REGEX_REPLACE
     { let (pat, repl, flags) = r in ExprStmt (RegexReplace (e, pat, repl, flags)) }
+  | MATCH subject = expr cases = match_block
+    { Match (subject, cases) }
   | IF cond = expr body = block                  { If (cond, body, []) }
   | IF cond = expr body = block ELSE els = block { If (cond, body, els) }
   | IF cond = expr body = block ELSE elif = else_if { If (cond, body, [elif]) }
   | WHILE cond = expr body = block               { While (cond, body) }
   | FOR name = IDENT IN e = expr body = block    { For (name, e, body) }
+  | BREAK                                         { Break }
+  | CONTINUE                                      { Continue }
+  | FN name = IDENT body = block
+    { FnDef (name, [], body) }
+  | FN name = IDENT params = bare_param_list body = block
+    { FnDef (name, params, body) }
   | FN name = IDENT LPAREN params = param_list RPAREN body = block
     { FnDef (name, params, body) }
+  | REC FN name = IDENT body = block
+    { RecFnDef (name, [], body) }
+  | REC FN name = IDENT params = bare_param_list body = block
+    { RecFnDef (name, params, body) }
+  | REC FN name = IDENT LPAREN params = param_list RPAREN body = block
+    { RecFnDef (name, params, body) }
   | RETURN e = expr                              { Return e }
   | e = expr                                     { ExprStmt e }
+  ;
+
+enum_block:
+  | LBRACE sep_lines vars = terminated_enum_variants RBRACE { vars }
+  ;
+
+terminated_enum_variants:
+  | /* empty */                                           { [] }
+  | v = IDENT rest = terminated_enum_tail                 { v :: rest }
+  ;
+
+terminated_enum_tail:
+  | /* empty */                                           { [] }
+  | COMMA rest = terminated_enum_after_sep                { rest }
+  | sep rest = terminated_enum_after_sep                  { rest }
+  ;
+
+terminated_enum_after_sep:
+  | /* empty */                                           { [] }
+  | v = IDENT rest = terminated_enum_tail                 { v :: rest }
   ;
 
 else_if:
@@ -84,10 +116,43 @@ else_if:
   | IF cond = expr body = block ELSE elif = else_if { If (cond, body, [elif]) }
   ;
 
+match_block:
+  | LBRACE sep_lines cases = terminated_match_cases RBRACE { cases }
+  ;
+
+terminated_match_cases:
+  | /* empty */                                   { [] }
+  | c = match_case rest = terminated_match_tail   { c :: rest }
+  ;
+
+terminated_match_tail:
+  | /* empty */                                   { [] }
+  | sep                                           { [] }
+  | sep c = match_case rest = terminated_match_tail { c :: rest }
+  ;
+
+match_case:
+  | CASE p = match_pattern body = block           { (p, body) }
+  ;
+
+match_pattern:
+  | UNDERSCORE                                    { PWildcard }
+  | e = expr                                      { PExpr e }
+  ;
+
 param_list:
   | /* empty */                            { [] }
   | p = IDENT                              { [p] }
   | p = IDENT COMMA rest = param_list      { p :: rest }
+  ;
+
+bare_param_list:
+  | p = IDENT rest = bare_param_tail       { p :: rest }
+  ;
+
+bare_param_tail:
+  | /* empty */                            { [] }
+  | COMMA p = IDENT rest = bare_param_tail { p :: rest }
   ;
 
 expr:
@@ -142,8 +207,8 @@ mul_expr:
 
 unary_expr:
   | e = postfix_expr                      { e }
-  | MINUS e = unary_expr %prec UMINUS     { UnaryOp (Neg, e) }
-  | NOT e = unary_expr %prec UNOT         { UnaryOp (Not, e) }
+  | MINUS e = unary_expr                  { UnaryOp (Neg, e) }
+  | NOT e = unary_expr                    { UnaryOp (Not, e) }
   ;
 
 postfix_expr:
@@ -169,8 +234,6 @@ primary_expr:
   | LPAREN e = expr RPAREN               { e }
   | LBRACKET elems = array_elems RBRACKET { ArrayLit elems }
   | LBRACE pairs = hash_pairs RBRACE     { HashLit pairs }
-  | FN LPAREN params = param_list RPAREN body = block
-    { Lambda (params, body) }
   | r = REGEX                            { let (pat, flags) = r in RegexLit (pat, flags) }
   ;
 

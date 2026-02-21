@@ -5,6 +5,9 @@ let indent_level = ref 0
 let temp_counter = ref 0
 let function_depth = ref 0
 
+type loop_kind = NativeLoop | CallbackLoop
+let loop_stack : loop_kind list ref = ref []
+
 let emit s = Buffer.add_string buf s
 let emitln s =
   Buffer.add_string buf (String.make (!indent_level * 2) ' ');
@@ -19,6 +22,30 @@ let indent f =
 let fresh prefix =
   incr temp_counter;
   Printf.sprintf "__%s_%d" prefix !temp_counter
+
+let push_loop kind = loop_stack := kind :: !loop_stack
+let pop_loop () =
+  match !loop_stack with
+  | _ :: rest -> loop_stack := rest
+  | [] -> ()
+
+let current_loop_kind () =
+  match !loop_stack with
+  | kind :: _ -> Some kind
+  | [] -> None
+
+let rec lower_match_to_if scrutinee = function
+  | [] -> ExprStmt Nil
+  | (pattern, body) :: rest ->
+    let cond = match pattern with
+      | PWildcard -> BoolLit true
+      | PExpr e -> BinOp (Eq, Var scrutinee, e)
+    in
+    let else_body = match rest with
+      | [] -> []
+      | _ -> [lower_match_to_if scrutinee rest]
+    in
+    If (cond, body, else_body)
 
 let go_escape_string s =
   let b = Buffer.create (String.length s) in
@@ -347,12 +374,26 @@ and gen_stmts_returning stmts =
     end
 
 and gen_stmt = function
+  | TypeDef (_name, _repr) ->
+    ()
+  | EnumDef (_name, variants) ->
+    List.iteri (fun i variant ->
+      emitln (Printf.sprintf "var %s Value = %d" variant i)
+    ) variants
   | Let (name, e) ->
     emitln (Printf.sprintf "var %s Value = %s" name (gen_expr e))
   | Assign (name, e) ->
     emitln (Printf.sprintf "%s = %s" name (gen_expr e))
   | IndexAssign (e, idx, v) ->
     emitln (Printf.sprintf "valIndexAssign(%s, %s, %s)" (gen_expr e) (gen_expr idx) (gen_expr v))
+  | Match (subject, cases) ->
+    let slot = fresh "match" in
+    gen_stmt (Let (slot, subject));
+    begin
+      match cases with
+      | [] -> ()
+      | _ -> gen_stmt (lower_match_to_if slot cases)
+    end
   | If (cond, then_body, []) ->
     emitln (Printf.sprintf "if valTruthy(%s) {" (gen_expr cond));
     indent (fun () -> List.iter gen_stmt then_body);
@@ -365,18 +406,79 @@ and gen_stmt = function
     emitln "}"
   | While (cond, body) ->
     emitln (Printf.sprintf "for valTruthy(%s) {" (gen_expr cond));
-    indent (fun () -> List.iter gen_stmt body);
+    indent (fun () ->
+      push_loop NativeLoop;
+      List.iter gen_stmt body;
+      pop_loop ()
+    );
     emitln "}"
   | For (name, e, body) ->
     let iter_name = fresh "iter" in
     emitln (Printf.sprintf "%s := %s" iter_name (gen_expr e));
-    emitln (Printf.sprintf "valIter(%s, func(_item Value) {" iter_name);
+    emitln "func() {";
     indent (fun () ->
-      emitln (Printf.sprintf "var %s Value = _item" name);
-      List.iter gen_stmt body
+      emitln "defer func() {";
+      indent (fun () ->
+        emitln "if r := recover(); r != nil {";
+        indent (fun () ->
+          emitln "if r != buoyBreakSignal {";
+          indent (fun () -> emitln "panic(r)");
+          emitln "}"
+        );
+        emitln "}"
+      );
+      emitln "}()";
+      emitln (Printf.sprintf "valIter(%s, func(_item Value) {" iter_name);
+      indent (fun () ->
+        emitln "func() {";
+        indent (fun () ->
+          emitln "defer func() {";
+          indent (fun () ->
+            emitln "if r := recover(); r != nil {";
+            indent (fun () ->
+              emitln "if r == buoyContinueSignal {";
+              indent (fun () -> emitln "return");
+              emitln "}";
+              emitln "panic(r)"
+            );
+            emitln "}"
+          );
+          emitln "}()";
+          emitln (Printf.sprintf "var %s Value = _item" name);
+          push_loop CallbackLoop;
+          List.iter gen_stmt body;
+          pop_loop ()
+        );
+        emitln "}()"
+      );
+      emitln "})"
+    );
+    emitln "}()"
+  | Break ->
+    begin match current_loop_kind () with
+    | Some NativeLoop -> emitln "break"
+    | Some CallbackLoop -> emitln "panic(buoyBreakSignal)"
+    | None -> emitln "panic(\"break used outside of loop\")"
+    end
+  | Continue ->
+    begin match current_loop_kind () with
+    | Some NativeLoop -> emitln "continue"
+    | Some CallbackLoop -> emitln "panic(buoyContinueSignal)"
+    | None -> emitln "panic(\"continue used outside of loop\")"
+    end
+  | FnDef (name, params, body) ->
+    emitln (Printf.sprintf "var %s Value" name);
+    emitln (Printf.sprintf "%s = BuoyFunc(func(_args []Value) Value {" name);
+    indent (fun () ->
+      incr function_depth;
+      List.iteri (fun i p ->
+        emitln (Printf.sprintf "var %s Value = argAt(_args, %d)" p i)
+      ) params;
+      gen_stmts_returning body;
+      decr function_depth
     );
     emitln "})"
-  | FnDef (name, params, body) ->
+  | RecFnDef (name, params, body) ->
     emitln (Printf.sprintf "var %s Value" name);
     emitln (Printf.sprintf "%s = BuoyFunc(func(_args []Value) Value {" name);
     indent (fun () ->
@@ -438,6 +540,11 @@ type RegexValue struct {
   Pattern string
   Flags   string
 }
+
+type buoyLoopSignal string
+
+const buoyBreakSignal buoyLoopSignal = "break"
+const buoyContinueSignal buoyLoopSignal = "continue"
 
 func init() {
   rand.Seed(time.Now().UnixNano())
@@ -1281,6 +1388,7 @@ let generate (program : Ast.program) : string =
   indent_level := 0;
   temp_counter := 0;
   function_depth := 0;
+  loop_stack := [];
   emit runtime;
   List.iter gen_stmt program;
   emitln "}";

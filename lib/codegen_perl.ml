@@ -2,6 +2,8 @@ open Ast
 
 let buf = Buffer.create 4096
 let indent_level = ref 0
+let temp_counter = ref 0
+let loop_depth = ref 0
 
 let emit s = Buffer.add_string buf s
 let emitln s =
@@ -16,6 +18,23 @@ let indent f =
 
 (* Track declared variables for $ sigil *)
 let declared = Hashtbl.create 64
+
+let fresh_temp prefix =
+  incr temp_counter;
+  Printf.sprintf "__%s_%d" prefix !temp_counter
+
+let rec lower_match_to_if scrutinee = function
+  | [] -> ExprStmt Nil
+  | (pattern, body) :: rest ->
+    let cond = match pattern with
+      | PWildcard -> BoolLit true
+      | PExpr e -> Call (Var "buoy_match_eq", [Var scrutinee; e])
+    in
+    let else_body = match rest with
+      | [] -> []
+      | _ -> [lower_match_to_if scrutinee rest]
+    in
+    If (cond, body, else_body)
 
 (* Check if a call returns an array *)
 let call_returns_array = function
@@ -314,6 +333,13 @@ and gen_index e idx =
     Printf.sprintf "%s->[%s]" (gen_expr e) (gen_expr idx)
 
 and gen_stmt = function
+  | TypeDef (_name, _repr) ->
+    ()
+  | EnumDef (_name, variants) ->
+    List.iteri (fun i variant ->
+      Hashtbl.replace declared variant true;
+      emitln (Printf.sprintf "my $%s = %d;" variant i)
+    ) variants
   | Let (name, ArrayLit elems) ->
     Hashtbl.replace declared name true;
     Hashtbl.replace declared (name ^ "_is_array") true;
@@ -347,6 +373,14 @@ and gen_stmt = function
       emitln (Printf.sprintf "$%s[%s] = %s;" name (gen_expr idx) (gen_expr v))
   | IndexAssign (target, idx, v) ->
     emitln (Printf.sprintf "%s->[%s] = %s;" (gen_expr target) (gen_expr idx) (gen_expr v))
+  | Match (subject, cases) ->
+    let slot = fresh_temp "match" in
+    gen_stmt (Let (slot, subject));
+    begin
+      match cases with
+      | [] -> ()
+      | _ -> gen_stmt (lower_match_to_if slot cases)
+    end
   | If (cond, then_body, else_body) ->
     emitln (Printf.sprintf "if (%s) {" (gen_expr cond));
     indent (fun () -> List.iter gen_stmt then_body);
@@ -357,17 +391,41 @@ and gen_stmt = function
     emitln "}"
   | While (cond, body) ->
     emitln (Printf.sprintf "while (%s) {" (gen_expr cond));
-    indent (fun () -> List.iter gen_stmt body);
+    indent (fun () ->
+      incr loop_depth;
+      List.iter gen_stmt body;
+      decr loop_depth
+    );
     emitln "}"
   | For (name, Var arr_name, body) when Hashtbl.mem declared (arr_name ^ "_is_array") ->
     emitln (Printf.sprintf "for my $%s (@%s) {" name arr_name);
-    indent (fun () -> List.iter gen_stmt body);
+    indent (fun () ->
+      incr loop_depth;
+      List.iter gen_stmt body;
+      decr loop_depth
+    );
     emitln "}"
   | For (name, e, body) ->
     emitln (Printf.sprintf "for my $%s (@{[%s]}) {" name (gen_expr e));
+    indent (fun () ->
+      incr loop_depth;
+      List.iter gen_stmt body;
+      decr loop_depth
+    );
+    emitln "}"
+  | Break ->
+    if !loop_depth > 0 then emitln "last;"
+    else emitln "die \"break used outside of loop\";"
+  | Continue ->
+    if !loop_depth > 0 then emitln "next;"
+    else emitln "die \"continue used outside of loop\";"
+  | FnDef (name, params, body) ->
+    Hashtbl.replace declared name true;
+    let param_decls = String.concat "; " (List.map (fun p -> "my $" ^ p ^ " = shift") params) in
+    emitln (Printf.sprintf "sub %s { %s;" name param_decls);
     indent (fun () -> List.iter gen_stmt body);
     emitln "}"
-  | FnDef (name, params, body) ->
+  | RecFnDef (name, params, body) ->
     Hashtbl.replace declared name true;
     let param_decls = String.concat "; " (List.map (fun p -> "my $" ^ p ^ " = shift") params) in
     emitln (Printf.sprintf "sub %s { %s;" name param_decls);
@@ -395,9 +453,73 @@ and gen_stmts_to_string stmts =
 let generate (program : Ast.program) : string =
   Buffer.clear buf;
   indent_level := 0;
+  temp_counter := 0;
+  loop_depth := 0;
   Hashtbl.clear declared;
   emitln "use strict;";
   emitln "use warnings;";
+  emitln "use Scalar::Util qw(looks_like_number);";
+  emitln "";
+  emitln "sub buoy_match_eq {";
+  indent (fun () ->
+    emitln "my ($a, $b) = @_;";
+    emitln "if (!defined $a || !defined $b) {";
+    indent (fun () -> emitln "return (!defined $a && !defined $b) ? 1 : 0;");
+    emitln "}";
+    emitln "if (!ref($a) && !ref($b) && looks_like_number($a) && looks_like_number($b)) {";
+    indent (fun () -> emitln "return ($a == $b) ? 1 : 0;");
+    emitln "}";
+    emitln "return (\"$a\" eq \"$b\") ? 1 : 0;"
+  );
+  emitln "}";
+  emitln "our %BUOY_HOST = ();";
+  emitln "";
+  emitln "sub buoy_host_set {";
+  indent (fun () ->
+    emitln "my ($path, $value) = @_;";
+    emitln "$BUOY_HOST{$path} = $value;";
+    emitln "return $value;"
+  );
+  emitln "}";
+  emitln "";
+  emitln "sub host_get {";
+  indent (fun () ->
+    emitln "my ($path) = @_;";
+    emitln "if (exists $BUOY_HOST{$path}) {";
+    indent (fun () -> emitln "return $BUOY_HOST{$path};");
+    emitln "}";
+    emitln "die \"Buoy host_get missing path: $path\";"
+  );
+  emitln "}";
+  emitln "";
+  emitln "sub host_call {";
+  indent (fun () ->
+    emitln "my ($path, @args) = @_;";
+    emitln "my $target = host_get($path);";
+    emitln "if (ref($target) eq 'CODE') {";
+    indent (fun () -> emitln "return $target->(@args);");
+    emitln "}";
+    emitln "die \"Buoy host_call target is not CODE for path: $path\";"
+  );
+  emitln "}";
+  emitln "";
+  emitln "if (defined $ENV{BUOY_PERL_HOST} && $ENV{BUOY_PERL_HOST} ne \"\") {";
+  indent (fun () ->
+    emitln "my $host_file = $ENV{BUOY_PERL_HOST};";
+    emitln "my $load_file = $host_file;";
+    emitln "if ($load_file !~ m{^(?:/|\\./|\\.\\./)}) {";
+    indent (fun () -> emitln "$load_file = \"./\" . $load_file;");
+    emitln "}";
+    emitln "my $ok = do $load_file;";
+    emitln "if (!defined $ok) {";
+    indent (fun () ->
+      emitln "if ($@) { die \"Failed to load BUOY_PERL_HOST '$load_file': $@\"; }";
+      emitln "if ($!) { die \"Failed to load BUOY_PERL_HOST '$load_file': $!\"; }";
+      emitln "die \"Failed to load BUOY_PERL_HOST '$load_file'\";"
+    );
+    emitln "}"
+  );
+  emitln "}";
   emitln "";
   List.iter gen_stmt program;
   Buffer.contents buf

@@ -1,0 +1,232 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Welcome to Buoy</title>
+    <style>
+      :root {
+        --bg: #f7f4ee;
+        --panel: #fffdf9;
+        --ink: #1e1b16;
+        --muted: #62584a;
+        --brand: #0a6c57;
+        --brand-2: #1f8a70;
+        --line: #dfd6c9;
+        --code-bg: #f0ebe2;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        font-family: Charter, "Palatino Linotype", "Book Antiqua", Palatino, serif;
+        color: var(--ink);
+        background:
+          radial-gradient(circle at 20% 0%, #fff8ea 0%, transparent 45%),
+          radial-gradient(circle at 100% 10%, #d9f2e8 0%, transparent 35%),
+          var(--bg);
+        line-height: 1.55;
+      }
+
+      .wrap {
+        width: min(980px, 92vw);
+        margin: 2.4rem auto 3rem;
+      }
+
+      .hero {
+        border: 1px solid var(--line);
+        background: linear-gradient(145deg, #fffdf9 0%, #f8f3ea 100%);
+        border-radius: 16px;
+        padding: 1.8rem 1.4rem;
+        box-shadow: 0 8px 22px rgba(37, 33, 25, 0.08);
+      }
+
+      h1 {
+        margin: 0;
+        font-size: clamp(1.8rem, 3.8vw, 2.7rem);
+        letter-spacing: 0.02em;
+      }
+
+      .tagline {
+        margin-top: 0.55rem;
+        color: var(--muted);
+        font-size: 1.04rem;
+      }
+
+      .badge-row {
+        margin-top: 1rem;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+      }
+
+      .badge {
+        border: 1px solid #b5d8cc;
+        background: #eaf8f2;
+        color: #124d3f;
+        border-radius: 999px;
+        padding: 0.22rem 0.7rem;
+        font-size: 0.86rem;
+      }
+
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(12, 1fr);
+        gap: 0.95rem;
+        margin-top: 1rem;
+      }
+
+      .card {
+        grid-column: span 12;
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        background: var(--panel);
+        padding: 1rem;
+        box-shadow: 0 6px 18px rgba(24, 20, 14, 0.05);
+      }
+
+      @media (min-width: 900px) {
+        .card-half {
+          grid-column: span 6;
+        }
+      }
+
+      h2 {
+        margin: 0 0 0.55rem;
+        color: var(--brand);
+        font-size: 1.18rem;
+      }
+
+      p {
+        margin: 0.5rem 0;
+      }
+
+      ul {
+        margin: 0.35rem 0 0.2rem 1.1rem;
+      }
+
+      code,
+      pre {
+        font-family: "Iosevka Term", "SFMono-Regular", Menlo, Consolas, monospace;
+      }
+
+      pre {
+        margin: 0.55rem 0 0;
+        background: var(--code-bg);
+        border: 1px solid #d8cfbf;
+        border-radius: 10px;
+        padding: 0.75rem;
+        overflow-x: auto;
+        font-size: 0.88rem;
+      }
+
+      .tip {
+        margin-top: 0.45rem;
+        padding: 0.6rem 0.72rem;
+        border-left: 4px solid var(--brand-2);
+        background: #eef8f4;
+        color: #153d32;
+        border-radius: 8px;
+      }
+
+      .footer {
+        margin-top: 1rem;
+        color: var(--muted);
+        font-size: 0.9rem;
+        text-align: center;
+      }
+
+      .footer code {
+        color: #1a5041;
+      }
+    </style>
+  </head>
+  <body>
+    <main class="wrap">
+      <section class="hero">
+        <h1>Welcome to Buoy</h1>
+        <p class="tagline">
+          A small language with a practical compiler pipeline and multi-target code generation.
+        </p>
+        <div class="badge-row">
+          <span class="badge">Source: <code>.by</code></span>
+          <span class="badge">Targets: perl / ocaml / go / bytecode</span>
+          <span class="badge">keyword ... end blocks</span>
+        </div>
+      </section>
+
+      <section class="grid">
+        <article class="card card-half">
+          <h2>1) First Program</h2>
+          <pre><code>let name = "World"
+println("Hello, " ++ name ++ "!")</code></pre>
+          <pre><code>opam exec -- ./_build/default/bin/buoy.exe hello.by --target perl &gt; hello.pl
+perl hello.pl</code></pre>
+        </article>
+
+        <article class="card card-half">
+          <h2>2) Build and Test</h2>
+          <pre><code>opam exec -- dune build
+opam exec -- dune runtest</code></pre>
+          <div class="tip">
+            If <code>opam</code> is already active in your shell, you can omit <code>opam exec --</code>.
+          </div>
+        </article>
+
+        <article class="card card-half">
+          <h2>3) Core Syntax</h2>
+          <ul>
+            <li><code>let x = 1</code>, <code>x = x + 1</code></li>
+            <li><code>if cond then ... else ... end</code></li>
+            <li><code>while cond do ... end</code></li>
+            <li><code>for item in items do ... end</code></li>
+            <li><code>fn add x, y { return x + y }</code></li>
+            <li><code>rec fn fact n { ... }</code></li>
+            <li>No implicit lambdas/closures in the speed-first profile</li>
+          </ul>
+        </article>
+
+        <article class="card card-half">
+          <h2>4) FFI Host Syntax</h2>
+          <ul>
+            <li>Read: <code>$foo/bar</code></li>
+            <li>Call: <code>&amp;foo/bar(1, 2)</code></li>
+          </ul>
+          <pre><code>BUOY_PERL_HOST=runtime/perl_host_default.pl perl hello.pl</code></pre>
+        </article>
+
+        <article class="card card-half">
+          <h2>5) Benchmark Mode</h2>
+          <pre><code>opam exec -- ./_build/default/bin/buoy.exe benchmarks/prime_count.by \
+  --benchmark benchmarks/prime_count.pl \
+  --iterations 10</code></pre>
+        </article>
+
+        <article class="card card-half">
+          <h2>6) Conformance Check</h2>
+          <pre><code>./scripts/check-conformance.sh</code></pre>
+          <p>Runs build/tests plus compile/runtime checks against the implemented spec.</p>
+        </article>
+
+        <article class="card">
+          <h2>Where to Read Next</h2>
+          <ul>
+            <li><code>LANG_SPEC.md</code> (normative language behavior)</li>
+            <li><code>CONFORMANCE_REPORT.md</code> (latest conformance run)</li>
+            <li><code>examples/*.by</code> (small working programs)</li>
+          </ul>
+          <div class="tip">
+            Open this file locally: <code>docs/welcome.html</code>
+          </div>
+        </article>
+      </section>
+
+      <p class="footer">
+        Local doc page for the Buoy repository. No build step required.
+      </p>
+    </main>
+  </body>
+</html>

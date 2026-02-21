@@ -18,10 +18,18 @@ println("Sorted: " ++ join(", ", sorted))
 let reversed = reverse(items)
 println("Reversed: " ++ join(", ", reversed))
 
-let doubled = map(items, fn(x) { x * 2 })
+let doubled = []
+for x in items {
+  push(doubled, x * 2)
+}
 println("Doubled: " ++ join(", ", doubled))
 
-let evens = filter(items, fn(x) { x % 2 == 0 })
+let evens = []
+for x in items {
+  if x % 2 == 0 {
+    push(evens, x)
+  }
+}
 println("Evens: " ++ join(", ", evens))
 
 let nums = [1, 2, 2, 3, 3, 3]
@@ -30,12 +38,14 @@ println("Unique: " ++ join(", ", uniq))
 
 # Iteration
 print("Each: ")
-each(items, fn(x) { print(string_of(x) ++ " ") })
+for x in items {
+  print(string_of(x) ++ " ")
+}
 println("")
 
 # For loop
 print("For: ")
-for item in items do
+for item in items {
   print(string_of(item) ++ " ")
-end
+}
 println("")

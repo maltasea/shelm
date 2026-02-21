@@ -26,7 +26,7 @@ let format_error = function
     in
     Printf.sprintf "%s%d:%d (char %d): %s" module_part line column char_pos message
   | Unknown_target t ->
-    Printf.sprintf "Unknown target: %s (use perl, ocaml, or go)" t
+    Printf.sprintf "Unknown target: %s (use perl, ocaml, go, or bytecode)" t
   | Invalid_ast { where; message } ->
     Printf.sprintf "Invalid AST at %s: %s" where message
   | Macro_error { where; message } ->

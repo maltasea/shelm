@@ -2,6 +2,7 @@ type target =
   | Perl
   | Ocaml
   | Go
+  | Bytecode
 
 let ( let* ) r f = match r with Ok v -> f v | Error _ as e -> e
 
@@ -9,11 +10,12 @@ let target_of_string = function
   | "perl" -> Ok Perl
   | "ocaml" -> Ok Ocaml
   | "go" -> Ok Go
+  | "bytecode" -> Ok Bytecode
   | t -> Error (Errors.Unknown_target t)
 
 let parse_legacy ?(module_name = "") (source : string) :
   (Ast.program, Errors.compile_error) result =
-  let source = Reader.rewrite_source source in
+  let source = Reader.rewrite_source ~module_name source in
   let source =
     if String.length source > 0 && source.[String.length source - 1] <> '\n'
     then source ^ "\n"
@@ -57,13 +59,20 @@ let read_ast ?(module_name = "") (source : string) :
 let compile_ast (target : target) (program : Tuple_ast.program) :
   (string, Errors.compile_error) result =
   let* expanded = Macro_expand.expand_program program in
-  let* legacy = Tuple_ast.program_of_node expanded in
-  let code = match target with
-    | Perl -> Codegen_perl.generate legacy
-    | Ocaml -> Codegen_ocaml.generate legacy
-    | Go -> Codegen_go.generate legacy
-  in
-  Ok code
+  match target with
+  | Bytecode ->
+    Bytecode.generate expanded
+  | Perl
+  | Ocaml
+  | Go ->
+    let* legacy = Tuple_ast.program_of_node expanded in
+    let code = match target with
+      | Perl -> Codegen_perl.generate legacy
+      | Ocaml -> Codegen_ocaml.generate legacy
+      | Go -> Codegen_go.generate legacy
+      | Bytecode -> assert false
+    in
+    Ok code
 
 let compile_source ?(module_name = "") (target : target) (source : string) :
   (string, Errors.compile_error) result =
