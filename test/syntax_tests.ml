@@ -15,12 +15,12 @@ let contains_substring hay needle =
     loop 0
 
 let compile_perl source =
-  match Buoy_lib.Buoy.compile_source_target "perl" source with
+  match Shelm_lib.Shelm.compile_source_target "perl" source with
   | Ok code -> code
-  | Error err -> failwith (Buoy_lib.Errors.format_error err)
+  | Error err -> failwith (Shelm_lib.Errors.format_error err)
 
 let compile_perl_result source =
-  Buoy_lib.Buoy.compile_source_target "perl" source
+  Shelm_lib.Shelm.compile_source_target "perl" source
 
 let assert_contains label hay needle =
   if not (contains_substring hay needle) then
@@ -30,7 +30,7 @@ let assert_parse_error_contains label source needle =
   match compile_perl_result source with
   | Ok _ -> failwith (Printf.sprintf "%s: expected parse error" label)
   | Error err ->
-    let msg = Buoy_lib.Errors.format_error err in
+    let msg = Shelm_lib.Errors.format_error err in
     if not (contains_substring msg needle) then
       failwith (Printf.sprintf "%s: expected error containing %S, got: %s" label needle msg)
 
@@ -83,8 +83,8 @@ end
   in
   let code = compile_perl source in
   assert_contains "match-subject" code "my $__match_1 = $x;";
-  assert_contains "match-case-1" code "if (buoy_match_eq($__match_1, 1)) {";
-  assert_contains "match-case-2" code "if (buoy_match_eq($__match_1, 2)) {";
+  assert_contains "match-case-1" code "if (shelm_match_eq($__match_1, 1)) {";
+  assert_contains "match-case-2" code "if (shelm_match_eq($__match_1, 2)) {";
   assert_contains "match-wildcard" code "if (1) {"
 
 let test_type_enum_compile () =
@@ -107,7 +107,7 @@ end
   assert_contains "enum-red" code "my $red = 0;";
   assert_contains "enum-green" code "my $green = 1;";
   assert_contains "enum-blue" code "my $blue = 2;";
-  assert_contains "enum-match" code "if (buoy_match_eq($__match_1, $red)) {"
+  assert_contains "enum-match" code "if (shelm_match_eq($__match_1, $red)) {"
 
 let test_break_continue_compile () =
   let source =
@@ -137,7 +137,7 @@ let f = fn(x) { x * 2 }
   match compile_perl_result source with
   | Ok _ -> failwith "lambda should be rejected in speed-first profile"
   | Error err ->
-    let msg = Buoy_lib.Errors.format_error err in
+    let msg = Shelm_lib.Errors.format_error err in
     if not (contains_substring msg "Parse error") then
       failwith (Printf.sprintf "expected parse error for lambda, got: %s" msg)
 
@@ -211,7 +211,7 @@ end
   assert_contains "kw-elif" code "if (($total == 0)) {";
   assert_contains "kw-while" code "while (($total > 0)) {";
   assert_contains "kw-match" code "my $__match_1 = $total;";
-  assert_contains "kw-case" code "if (buoy_match_eq($__match_1, 1)) {"
+  assert_contains "kw-case" code "if (shelm_match_eq($__match_1, 1)) {"
 
 let run name f =
   try

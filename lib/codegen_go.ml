@@ -340,7 +340,7 @@ and gen_call func args =
 
 and gen_lambda params body =
   let body_str = gen_function_body_to_string params body in
-  Printf.sprintf "BuoyFunc(func(_args []Value) Value {\n%s})" body_str
+  Printf.sprintf "ShelmFunc(func(_args []Value) Value {\n%s})" body_str
 
 and gen_function_body_to_string params body =
   let saved = Buffer.contents buf in
@@ -468,7 +468,7 @@ and gen_stmt = function
     end
   | FnDef (name, params, body) ->
     emitln (Printf.sprintf "var %s Value" name);
-    emitln (Printf.sprintf "%s = BuoyFunc(func(_args []Value) Value {" name);
+    emitln (Printf.sprintf "%s = ShelmFunc(func(_args []Value) Value {" name);
     indent (fun () ->
       incr function_depth;
       List.iteri (fun i p ->
@@ -480,7 +480,7 @@ and gen_stmt = function
     emitln "})"
   | RecFnDef (name, params, body) ->
     emitln (Printf.sprintf "var %s Value" name);
-    emitln (Printf.sprintf "%s = BuoyFunc(func(_args []Value) Value {" name);
+    emitln (Printf.sprintf "%s = ShelmFunc(func(_args []Value) Value {" name);
     indent (fun () ->
       incr function_depth;
       List.iteri (fun i p ->
@@ -523,7 +523,7 @@ import (
 type Value interface{}
 type Array []Value
 type Hash map[string]Value
-type BuoyFunc func([]Value) Value
+type ShelmFunc func([]Value) Value
 
 type Channel struct {
   file   *os.File
@@ -607,7 +607,7 @@ func toString(v Value) string {
     return "(array)"
   case Hash:
     return "(hash)"
-  case BuoyFunc:
+  case ShelmFunc:
     return "(function)"
   case *Channel:
     return "(channel)"
@@ -829,7 +829,7 @@ func valConcat(a, b Value) Value {
 
 func valCall(f Value, args []Value) Value {
   switch fn := f.(type) {
-  case BuoyFunc:
+  case ShelmFunc:
     return fn(args)
   case func([]Value) Value:
     return fn(args)

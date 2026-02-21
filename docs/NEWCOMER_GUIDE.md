@@ -1,12 +1,12 @@
-# Buoy Newcomer Guide
+# Shelm Newcomer Guide
 
-Welcome to Buoy.
+Welcome to Shelm.
 
 If you are new, this guide gets you from zero to running code in a few minutes.
 
-## 1) What Buoy Is
+## 1) What Shelm Is
 
-Buoy is a small language that compiles to multiple targets:
+Shelm is a small language that compiles to multiple targets:
 
 - `perl`
 - `ocaml`
@@ -19,7 +19,7 @@ Source files use the `.by` extension.
 
 Create `hello.by`:
 
-```buoy
+```shelm
 let name = "World"
 println("Hello, " ++ name ++ "!")
 ```
@@ -27,11 +27,11 @@ println("Hello, " ++ name ++ "!")
 Compile to Perl:
 
 ```bash
-opam exec -- ./_build/default/bin/buoy.exe hello.by --target perl > hello.pl
+opam exec -- ./_build/default/bin/shelm.exe hello.by --target perl > hello.pl
 perl hello.pl
 ```
 
-If `opam` is already active in your shell, you can call `./_build/default/bin/buoy.exe` directly.
+If `opam` is already active in your shell, you can call `./_build/default/bin/shelm.exe` directly.
 
 ## 3) Build the Compiler
 
@@ -73,22 +73,22 @@ opam exec -- dune runtest
 
 In generated Perl, host hooks are loaded with:
 
-- `BUOY_PERL_HOST=runtime/perl_host_default.pl`
+- `SHELM_PERL_HOST=runtime/perl_host_default.pl`
 
 ## 6) Helpful Commands
 
 Compile sample files:
 
 ```bash
-opam exec -- ./_build/default/bin/buoy.exe examples/hello.by --target perl
-opam exec -- ./_build/default/bin/buoy.exe examples/arrays.by --target go
-opam exec -- ./_build/default/bin/buoy.exe examples/hashes.by --target bytecode
+opam exec -- ./_build/default/bin/shelm.exe examples/hello.by --target perl
+opam exec -- ./_build/default/bin/shelm.exe examples/arrays.by --target go
+opam exec -- ./_build/default/bin/shelm.exe examples/hashes.by --target bytecode
 ```
 
 Run benchmark mode:
 
 ```bash
-opam exec -- ./_build/default/bin/buoy.exe benchmarks/prime_count.by \
+opam exec -- ./_build/default/bin/shelm.exe benchmarks/prime_count.by \
   --benchmark benchmarks/prime_count.pl \
   --iterations 10
 ```

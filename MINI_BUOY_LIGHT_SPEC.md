@@ -1,6 +1,6 @@
-# Mini Buoy Light (Syntax-Only Profile)
+# Mini Shelm Light (Syntax-Only Profile)
 
-This document defines **Mini Buoy Light** as a small, shell-like surface syntax profile in the Buoy family.
+This document defines **Mini Shelm Light** as a small, shell-like surface syntax profile in the Shelm family.
 
 Status:
 - Spec only.
@@ -8,8 +8,8 @@ Status:
 - No semantic changes implied.
 
 Purpose:
-- Provide a smaller language shape for derivative languages that should feel like a reduced Buoy.
-- Keep deterministic lowering to Buoy core forms by syntax shape only (no semantic analysis).
+- Provide a smaller language shape for derivative languages that should feel like a reduced Shelm.
+- Keep deterministic lowering to Shelm core forms by syntax shape only (no semantic analysis).
 
 ## 1) Design Constraints
 
@@ -87,7 +87,7 @@ Not part of Light:
 1. Brace blocks `{ ... }`
 2. Colon blocks `...: ... end`
 
-## 5) Deterministic Lowering Contract (Light -> Buoy Core)
+## 5) Deterministic Lowering Contract (Light -> Shelm Core)
 
 Lowering is syntactic:
 
@@ -98,7 +98,7 @@ Lowering is syntactic:
    - `$a/b` -> `host_get("a/b")`
    - `&a/b(...)` -> `host_call("a/b", ...)`
 
-Lowering target is Buoy core statement/expression forms; this profile does not define a separate runtime.
+Lowering target is Shelm core statement/expression forms; this profile does not define a separate runtime.
 
 ## 6) Minimal EBNF (Surface)
 
@@ -138,7 +138,7 @@ block  = { stmt , sep } ;
 
 ## 7) Example
 
-```buoy
+```shelm
 let total = 0
 for x in [1, 2, 3, 4] do
   total = total + x
@@ -157,4 +157,4 @@ A Light implementation is conformant if:
 
 1. It accepts only the allowed Light surface constructs.
 2. It rejects forbidden Light constructs.
-3. It lowers accepted programs to Buoy core-equivalent forms without semantic analysis.
+3. It lowers accepted programs to Shelm core-equivalent forms without semantic analysis.

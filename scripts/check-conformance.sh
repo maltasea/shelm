@@ -17,11 +17,11 @@ run_dune() {
   fi
 }
 
-run_buoy() {
+run_shelm() {
   if command -v opam >/dev/null 2>&1; then
-    opam exec -- ./_build/default/bin/buoy.exe "$@"
+    opam exec -- ./_build/default/bin/shelm.exe "$@"
   else
-    ./_build/default/bin/buoy.exe "$@"
+    ./_build/default/bin/shelm.exe "$@"
   fi
 }
 
@@ -30,46 +30,46 @@ run_dune build
 run_dune runtest
 
 echo "[2/7] .by extension enforcement"
-if run_buoy benchmarks/prime_count.pl --target perl >/tmp/buoy-ext.out 2>&1; then
+if run_shelm benchmarks/prime_count.pl --target perl >/tmp/shelm-ext.out 2>&1; then
   echo "Expected extension check to fail for non-.by file" >&2
   exit 1
 fi
-if ! rg -q "must use \\.by extension" /tmp/buoy-ext.out; then
+if ! rg -q "must use \\.by extension" /tmp/shelm-ext.out; then
   echo "Missing expected .by extension error message" >&2
-  cat /tmp/buoy-ext.out >&2
+  cat /tmp/shelm-ext.out >&2
   exit 1
 fi
 
 echo "[3/7] keyword/end-only block syntax enforcement"
-cat > /tmp/buoy-if-do.by <<'EOF'
+cat > /tmp/shelm-if-do.by <<'EOF'
 let x = 1
 if x == 1 do
   println("ok")
 end
 EOF
-if run_buoy /tmp/buoy-if-do.by --target perl >/tmp/buoy-if-do.out 2>&1; then
+if run_shelm /tmp/shelm-if-do.by --target perl >/tmp/shelm-if-do.out 2>&1; then
   echo "Expected if ... do to be rejected" >&2
   exit 1
 fi
-if ! rg -q "if \\.\\.\\. do.*not supported" /tmp/buoy-if-do.out; then
+if ! rg -q "if \\.\\.\\. do.*not supported" /tmp/shelm-if-do.out; then
   echo "Missing expected if ... do rejection message" >&2
-  cat /tmp/buoy-if-do.out >&2
+  cat /tmp/shelm-if-do.out >&2
   exit 1
 fi
 
-cat > /tmp/buoy-brace-block.by <<'EOF'
+cat > /tmp/shelm-brace-block.by <<'EOF'
 let x = 1
 if x == 1 {
   println("ok")
 }
 EOF
-if run_buoy /tmp/buoy-brace-block.by --target perl >/tmp/buoy-brace-block.out 2>&1; then
+if run_shelm /tmp/shelm-brace-block.by --target perl >/tmp/shelm-brace-block.out 2>&1; then
   echo "Expected brace block syntax to be rejected" >&2
   exit 1
 fi
-if ! rg -q "Brace blocks are not supported" /tmp/buoy-brace-block.out; then
+if ! rg -q "Brace blocks are not supported" /tmp/shelm-brace-block.out; then
   echo "Missing expected brace-block rejection message" >&2
-  cat /tmp/buoy-brace-block.out >&2
+  cat /tmp/shelm-brace-block.out >&2
   exit 1
 fi
 
@@ -84,21 +84,21 @@ if [[ "${#BY_FILES[@]}" -eq 0 ]]; then
 fi
 for src in "${BY_FILES[@]}"; do
   for target in perl ocaml go bytecode; do
-    run_buoy "$src" --target "$target" >"/tmp/buoy-conformance-$(basename "$src").$target.out"
+    run_shelm "$src" --target "$target" >"/tmp/shelm-conformance-$(basename "$src").$target.out"
   done
 done
 
 echo "[5/7] Execute generated Perl for all sample .by files"
 for src in "${BY_FILES[@]}"; do
-  run_buoy "$src" --target perl > /tmp/buoy-sample.pl
-  perl /tmp/buoy-sample.pl >/tmp/buoy-sample.out
+  run_shelm "$src" --target perl > /tmp/shelm-sample.pl
+  perl /tmp/shelm-sample.pl >/tmp/shelm-sample.out
 done
 
 echo "[6/7] Benchmark CLI mode"
-run_buoy benchmarks/prime_count.by --benchmark benchmarks/prime_count.pl --iterations 1 >/tmp/buoy-bench.out
-if ! rg -q "Perl benchmark comparison" /tmp/buoy-bench.out; then
+run_shelm benchmarks/prime_count.by --benchmark benchmarks/prime_count.pl --iterations 1 >/tmp/shelm-bench.out
+if ! rg -q "Perl benchmark comparison" /tmp/shelm-bench.out; then
   echo "Benchmark output missing expected header" >&2
-  cat /tmp/buoy-bench.out >&2
+  cat /tmp/shelm-bench.out >&2
   exit 1
 fi
 

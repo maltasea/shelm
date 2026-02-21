@@ -28,7 +28,7 @@ let rec lower_match_to_if scrutinee = function
   | (pattern, body) :: rest ->
     let cond = match pattern with
       | PWildcard -> BoolLit true
-      | PExpr e -> Call (Var "buoy_match_eq", [Var scrutinee; e])
+      | PExpr e -> Call (Var "shelm_match_eq", [Var scrutinee; e])
     in
     let else_body = match rest with
       | [] -> []
@@ -460,7 +460,7 @@ let generate (program : Ast.program) : string =
   emitln "use warnings;";
   emitln "use Scalar::Util qw(looks_like_number);";
   emitln "";
-  emitln "sub buoy_match_eq {";
+  emitln "sub shelm_match_eq {";
   indent (fun () ->
     emitln "my ($a, $b) = @_;";
     emitln "if (!defined $a || !defined $b) {";
@@ -472,12 +472,12 @@ let generate (program : Ast.program) : string =
     emitln "return (\"$a\" eq \"$b\") ? 1 : 0;"
   );
   emitln "}";
-  emitln "our %BUOY_HOST = ();";
+  emitln "our %SHELM_HOST = ();";
   emitln "";
-  emitln "sub buoy_host_set {";
+  emitln "sub shelm_host_set {";
   indent (fun () ->
     emitln "my ($path, $value) = @_;";
-    emitln "$BUOY_HOST{$path} = $value;";
+    emitln "$SHELM_HOST{$path} = $value;";
     emitln "return $value;"
   );
   emitln "}";
@@ -485,10 +485,10 @@ let generate (program : Ast.program) : string =
   emitln "sub host_get {";
   indent (fun () ->
     emitln "my ($path) = @_;";
-    emitln "if (exists $BUOY_HOST{$path}) {";
-    indent (fun () -> emitln "return $BUOY_HOST{$path};");
+    emitln "if (exists $SHELM_HOST{$path}) {";
+    indent (fun () -> emitln "return $SHELM_HOST{$path};");
     emitln "}";
-    emitln "die \"Buoy host_get missing path: $path\";"
+    emitln "die \"Shelm host_get missing path: $path\";"
   );
   emitln "}";
   emitln "";
@@ -499,13 +499,13 @@ let generate (program : Ast.program) : string =
     emitln "if (ref($target) eq 'CODE') {";
     indent (fun () -> emitln "return $target->(@args);");
     emitln "}";
-    emitln "die \"Buoy host_call target is not CODE for path: $path\";"
+    emitln "die \"Shelm host_call target is not CODE for path: $path\";"
   );
   emitln "}";
   emitln "";
-  emitln "if (defined $ENV{BUOY_PERL_HOST} && $ENV{BUOY_PERL_HOST} ne \"\") {";
+  emitln "if (defined $ENV{SHELM_PERL_HOST} && $ENV{SHELM_PERL_HOST} ne \"\") {";
   indent (fun () ->
-    emitln "my $host_file = $ENV{BUOY_PERL_HOST};";
+    emitln "my $host_file = $ENV{SHELM_PERL_HOST};";
     emitln "my $load_file = $host_file;";
     emitln "if ($load_file !~ m{^(?:/|\\./|\\.\\./)}) {";
     indent (fun () -> emitln "$load_file = \"./\" . $load_file;");
@@ -513,9 +513,9 @@ let generate (program : Ast.program) : string =
     emitln "my $ok = do $load_file;";
     emitln "if (!defined $ok) {";
     indent (fun () ->
-      emitln "if ($@) { die \"Failed to load BUOY_PERL_HOST '$load_file': $@\"; }";
-      emitln "if ($!) { die \"Failed to load BUOY_PERL_HOST '$load_file': $!\"; }";
-      emitln "die \"Failed to load BUOY_PERL_HOST '$load_file'\";"
+      emitln "if ($@) { die \"Failed to load SHELM_PERL_HOST '$load_file': $@\"; }";
+      emitln "if ($!) { die \"Failed to load SHELM_PERL_HOST '$load_file': $!\"; }";
+      emitln "die \"Failed to load SHELM_PERL_HOST '$load_file'\";"
     );
     emitln "}"
   );

@@ -1,4 +1,4 @@
-# Buoy Bytecode v1
+# Shelm Bytecode v1
 
 > Directional bytecode design notes. Current emitted bytecode text format is defined by `lib/bytecode.ml`.
 

@@ -1,6 +1,6 @@
 (executable
  (name syntax_tests)
- (libraries buoy_lib))
+ (libraries shelm_lib))
 
 (rule
  (alias runtest)

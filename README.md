@@ -1,4 +1,4 @@
- # Buoy Multi-Backend Spec (Session Handoff)
+ # Shelm Multi-Backend Spec (Session Handoff)
 
   ## Normative Status
 
@@ -10,7 +10,7 @@
 
   ## Summary
 
-  Build Buoy as a single-host compiler with gradually added backends.
+  Build Shelm as a single-host compiler with gradually added backends.
   First production backend after current work: Python, targeting semantic parity for core language + collections + regex (not full async/I/O initially).
 
   This spec is decision-complete for next implementation prompt.
@@ -60,7 +60,7 @@
 
   ## Public Interfaces / APIs
 
-  ### lib/buoy.ml
+  ### lib/shelm.ml
 
   Maintain and use these APIs as primary:
 
@@ -72,7 +72,7 @@
 
   ### CLI
 
-  - bin/buoy.ml remains thin wrapper over compile_file_target.
+  - bin/shelm.ml remains thin wrapper over compile_file_target.
   - Target list will expand to include python when backend lands.
 
   ## Reader / Syntax Rules (current expected behavior)
@@ -121,7 +121,7 @@
   Implement Python runtime helpers mirroring core semantic ops:
 
   - truthiness/coercion helpers
-  - arithmetic/comparison ops with Buoy semantics
+  - arithmetic/comparison ops with Shelm semantics
   - concat/index/index-assign
   - collection helpers (length/push/pop/shift/sort/reverse/keys/values/exists/delete/map/filter/each/join/split/substr/etc. as in v1 scope)
   - regex helpers
@@ -173,11 +173,11 @@
 
 Perl output now includes a small host bridge:
 
-- `buoy_host_set(path, value)` registers a host value/function.
+- `shelm_host_set(path, value)` registers a host value/function.
 - `host_get(path)` resolves a host value.
 - `host_call(path, args...)` resolves then invokes a host function.
 
-If `BUOY_PERL_HOST` is set, generated Perl loads that file at startup (`do $ENV{BUOY_PERL_HOST}`), so host paths can be registered externally.
+If `SHELM_PERL_HOST` is set, generated Perl loads that file at startup (`do $ENV{SHELM_PERL_HOST}`), so host paths can be registered externally.
 
 Default host file:
 
@@ -189,28 +189,28 @@ It currently registers:
 - `time/now_ms`
 - `math/add`
 
-### Buoy host syntax
+### Shelm host syntax
 
 - `$foo/bar` rewrites to `host_get("foo/bar")`
 - `&foo/bar(...)` rewrites to `host_call("foo/bar", ...)`
 
-## Perl vs Buoy Timing Script
+## Perl vs Shelm Timing Script
 
 Use:
 
 ```bash
-scripts/compare-perl-vs-buoy.sh \
+scripts/compare-perl-vs-shelm.sh \
   --perl examples/bench_sum.pl \
-  --buoy examples/bench_sum.by \
+  --shelm examples/bench_sum.by \
   --iterations 50
 ```
 
 With host file:
 
 ```bash
-scripts/compare-perl-vs-buoy.sh \
+scripts/compare-perl-vs-shelm.sh \
   --perl path/to/reference.pl \
-  --buoy path/to/equivalent.by \
+  --shelm path/to/equivalent.by \
   --host runtime/perl_host_default.pl \
   --iterations 50
 ```
@@ -218,7 +218,7 @@ scripts/compare-perl-vs-buoy.sh \
 CLI wrapper:
 
 ```bash
-buoy path/to/equivalent.by \
+shelm path/to/equivalent.by \
   --benchmark path/to/reference.pl \
   --iterations 50 \
   --host runtime/perl_host_default.pl

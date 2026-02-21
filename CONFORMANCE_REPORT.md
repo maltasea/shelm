@@ -27,7 +27,7 @@ This report validates repository conformance against `LANG_SPEC.md` (implemented
    - `bytecode`
 5. Generated Perl from all sample `.by` files executes successfully.
 6. CLI benchmark mode works:
-   - `buoy benchmarks/prime_count.by --benchmark benchmarks/prime_count.pl --iterations 1`
+   - `shelm benchmarks/prime_count.by --benchmark benchmarks/prime_count.pl --iterations 1`
 7. Spec/test/conformance files are present:
    - `LANG_SPEC.md`
    - `scripts/check-conformance.sh`

@@ -1,4 +1,4 @@
-# Buoy Lang v1
+# Shelm Lang v1
 
 > Historical/directional draft. For implemented language behavior, see `LANG_SPEC.md`.
 
@@ -46,7 +46,7 @@ Design the language for fast bytecode interpreters first.
 
 ## Surface Syntax (v1)
 
-```buoy
+```shelm
 type option<T> =
 | None
 | Some(T)

@@ -1,5 +1,5 @@
 (library
- (name buoy_lib)
+ (name shelm_lib)
  (libraries str))
 
 (menhir

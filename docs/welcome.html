@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Buoy Docs</title>
+    <title>Shelm Docs</title>
     <style>
       :root {
         --paper: #f4f0e8;
@@ -265,10 +265,10 @@
     <div class="backdrop" aria-hidden="true"></div>
     <main class="wrap">
       <header class="hero" id="top">
-        <div class="eyebrow">Buoy Docs Site</div>
+        <div class="eyebrow">Shelm Docs Site</div>
         <h1>Fast Language, Explicit Costs</h1>
         <p class="lead">
-          Buoy is a speed-first language: bytecode-oriented, deterministic syntax, and explicit runtime tradeoffs.
+          Shelm is a speed-first language: bytecode-oriented, deterministic syntax, and explicit runtime tradeoffs.
           This page is fully local and openable directly as <code>docs/welcome.html</code>.
         </p>
         <div class="hero-grid">
@@ -303,7 +303,7 @@
         <section class="card two" id="quickstart">
           <h2>Quickstart</h2>
           <pre><code>opam exec -- dune build
-opam exec -- ./_build/default/bin/buoy.exe examples/hello.by --target perl &gt; hello.pl
+opam exec -- ./_build/default/bin/shelm.exe examples/hello.by --target perl &gt; hello.pl
 perl hello.pl</code></pre>
           <p class="cmd">Run all conformance checks: <code>./scripts/check-conformance.sh</code></p>
         </section>
@@ -372,7 +372,7 @@ println(string_of(sum))</code></pre>
 
         <section class="card" id="sexpr">
           <h2>Form-Only S-Expr Lowering</h2>
-          <p>Buoy is designed so syntax lowers deterministically to S-expr-like canonical forms without semantic analysis.</p>
+          <p>Shelm is designed so syntax lowers deterministically to S-expr-like canonical forms without semantic analysis.</p>
           <div class="split">
             <div>
               <h3>Surface</h3>
@@ -400,13 +400,13 @@ end</code></pre>
             <li>Runtime-costly features should be explicit and opt-in.</li>
           </ul>
           <h3>Handy Commands</h3>
-          <pre><code>opam exec -- ./_build/default/bin/buoy.exe examples/arrays.by --target go
-opam exec -- ./_build/default/bin/buoy.exe benchmarks/prime_count.by --target bytecode
-opam exec -- ./_build/default/bin/buoy.exe benchmarks/prime_count.by --benchmark benchmarks/prime_count.pl --iterations 10</code></pre>
+          <pre><code>opam exec -- ./_build/default/bin/shelm.exe examples/arrays.by --target go
+opam exec -- ./_build/default/bin/shelm.exe benchmarks/prime_count.by --target bytecode
+opam exec -- ./_build/default/bin/shelm.exe benchmarks/prime_count.by --benchmark benchmarks/prime_count.pl --iterations 10</code></pre>
         </section>
       </div>
 
-      <p class="footer">Buoy local docs page. Open directly from disk, no build step required.</p>
+      <p class="footer">Shelm local docs page. Open directly from disk, no build step required.</p>
     </main>
   </body>
 </html>

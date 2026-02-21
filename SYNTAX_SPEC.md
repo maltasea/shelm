@@ -1,4 +1,4 @@
-# Buoy Syntax Specification (Implemented)
+# Shelm Syntax Specification (Implemented)
 
 This document defines the implemented `.by` syntax.
 

@@ -282,11 +282,11 @@ and gen_stmt = function
         incr loop_depth;
         indent (fun () -> List.iter gen_stmt body);
         decr loop_depth;
-        emitln "with BuoyContinue -> ()"
+        emitln "with ShelmContinue -> ()"
       );
       emitln "done"
     );
-    emitln "with BuoyBreak -> ());"
+    emitln "with ShelmBreak -> ());"
   | For (name, e, body) ->
     emitln "(try";
     indent (fun () ->
@@ -299,19 +299,19 @@ and gen_stmt = function
           List.iter gen_stmt body;
           decr loop_depth
         );
-        emitln "with BuoyContinue -> ()"
+        emitln "with ShelmContinue -> ()"
       );
       emitln ")"
     );
-    emitln "with BuoyBreak -> ());"
+    emitln "with ShelmBreak -> ());"
   | Break ->
     if !loop_depth > 0 then
-      emitln "raise BuoyBreak;"
+      emitln "raise ShelmBreak;"
     else
       emitln "failwith \"break used outside of loop\";"
   | Continue ->
     if !loop_depth > 0 then
-      emitln "raise BuoyContinue;"
+      emitln "raise ShelmContinue;"
     else
       emitln "failwith \"continue used outside of loop\";"
   | FnDef (name, params, body) ->
@@ -351,7 +351,7 @@ and gen_stmts_to_string stmts =
   result
 
 let runtime = {|
-(* Buoy runtime for OCaml target *)
+(* Shelm runtime for OCaml target *)
 
 type value =
   | VInt of int
@@ -366,8 +366,8 @@ type value =
   | VRegex of string * string
   | VFuture of (unit -> value) * value option ref
 
-exception BuoyBreak
-exception BuoyContinue
+exception ShelmBreak
+exception ShelmContinue
 
 let val_truthy = function
   | VBool false | VNil | VInt 0 -> false

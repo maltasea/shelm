@@ -1,11 +1,11 @@
-# Buoy Language Spec (Implemented v1)
+# Shelm Language Spec (Implemented v1)
 
 ## Status
 
 This document is the normative language spec for the current implementation in this repository.
 
 - Source file extension: `.by`
-- Compiler entrypoint: `bin/buoy.ml`
+- Compiler entrypoint: `bin/shelm.ml`
 - Frontend pipeline: `reader -> lexer -> parser -> tuple AST -> normalize -> macro_expand`
 - Dedicated syntax grammar: `SYNTAX_SPEC.md`
 - Language policy: speed-first, bytecode-first. Features with hidden runtime costs are excluded by default.
@@ -151,7 +151,7 @@ The following are not part of the implemented parser/AST surface today:
 
 Example:
 
-```buoy
+```shelm
 match x with
   | 1 -> println("one")
   | 2 -> println("two")
@@ -168,7 +168,7 @@ end
 - `enum` declares runtime constants for variants.
   - Runtime value format is a compact integer tag (`0..n-1` by declaration order).
   - Example:
-    ```buoy
+    ```shelm
     enum color do
       red
       green
