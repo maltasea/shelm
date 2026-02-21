@@ -421,7 +421,7 @@ and gen_stmt = function
       indent (fun () ->
         emitln "if r := recover(); r != nil {";
         indent (fun () ->
-          emitln "if r != buoyBreakSignal {";
+          emitln "if r != shelmBreakSignal {";
           indent (fun () -> emitln "panic(r)");
           emitln "}"
         );
@@ -436,7 +436,7 @@ and gen_stmt = function
           indent (fun () ->
             emitln "if r := recover(); r != nil {";
             indent (fun () ->
-              emitln "if r == buoyContinueSignal {";
+              emitln "if r == shelmContinueSignal {";
               indent (fun () -> emitln "return");
               emitln "}";
               emitln "panic(r)"
@@ -457,13 +457,13 @@ and gen_stmt = function
   | Break ->
     begin match current_loop_kind () with
     | Some NativeLoop -> emitln "break"
-    | Some CallbackLoop -> emitln "panic(buoyBreakSignal)"
+    | Some CallbackLoop -> emitln "panic(shelmBreakSignal)"
     | None -> emitln "panic(\"break used outside of loop\")"
     end
   | Continue ->
     begin match current_loop_kind () with
     | Some NativeLoop -> emitln "continue"
-    | Some CallbackLoop -> emitln "panic(buoyContinueSignal)"
+    | Some CallbackLoop -> emitln "panic(shelmContinueSignal)"
     | None -> emitln "panic(\"continue used outside of loop\")"
     end
   | FnDef (name, params, body) ->
@@ -541,10 +541,10 @@ type RegexValue struct {
   Flags   string
 }
 
-type buoyLoopSignal string
+type shelmLoopSignal string
 
-const buoyBreakSignal buoyLoopSignal = "break"
-const buoyContinueSignal buoyLoopSignal = "continue"
+const shelmBreakSignal shelmLoopSignal = "break"
+const shelmContinueSignal shelmLoopSignal = "continue"
 
 func init() {
   rand.Seed(time.Now().UnixNano())
