@@ -40,17 +40,36 @@ if ! rg -q "must use \\.by extension" /tmp/buoy-ext.out; then
   exit 1
 fi
 
-echo "[3/7] do/end deprecation warning"
-cat > /tmp/buoy-do-end.by <<'EOF'
+echo "[3/7] keyword/end-only block syntax enforcement"
+cat > /tmp/buoy-if-do.by <<'EOF'
 let x = 1
 if x == 1 do
   println("ok")
 end
 EOF
-run_buoy /tmp/buoy-do-end.by --target perl >/tmp/buoy-do-end-code.pl 2>/tmp/buoy-do-end.err
-if ! rg -q "do/end block syntax is deprecated" /tmp/buoy-do-end.err; then
-  echo "Expected do/end deprecation warning not found" >&2
-  cat /tmp/buoy-do-end.err >&2
+if run_buoy /tmp/buoy-if-do.by --target perl >/tmp/buoy-if-do.out 2>&1; then
+  echo "Expected if ... do to be rejected" >&2
+  exit 1
+fi
+if ! rg -q "if \\.\\.\\. do.*not supported" /tmp/buoy-if-do.out; then
+  echo "Missing expected if ... do rejection message" >&2
+  cat /tmp/buoy-if-do.out >&2
+  exit 1
+fi
+
+cat > /tmp/buoy-brace-block.by <<'EOF'
+let x = 1
+if x == 1 {
+  println("ok")
+}
+EOF
+if run_buoy /tmp/buoy-brace-block.by --target perl >/tmp/buoy-brace-block.out 2>&1; then
+  echo "Expected brace block syntax to be rejected" >&2
+  exit 1
+fi
+if ! rg -q "Brace blocks are not supported" /tmp/buoy-brace-block.out; then
+  echo "Missing expected brace-block rejection message" >&2
+  cat /tmp/buoy-brace-block.out >&2
   exit 1
 fi
 
@@ -84,7 +103,7 @@ if ! rg -q "Perl benchmark comparison" /tmp/buoy-bench.out; then
 fi
 
 echo "[7/7] Spec file presence"
-for path in LANG_SPEC.md scripts/check-conformance.sh test/syntax_tests.ml; do
+for path in LANG_SPEC.md SYNTAX_SPEC.md scripts/check-conformance.sh test/syntax_tests.ml; do
   [[ -f "$path" ]] || { echo "Missing required file: $path" >&2; exit 1; }
 done
 

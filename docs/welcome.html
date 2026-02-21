@@ -3,230 +3,410 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Welcome to Buoy</title>
+    <title>Buoy Docs</title>
     <style>
       :root {
-        --bg: #f7f4ee;
-        --panel: #fffdf9;
-        --ink: #1e1b16;
-        --muted: #62584a;
-        --brand: #0a6c57;
-        --brand-2: #1f8a70;
-        --line: #dfd6c9;
-        --code-bg: #f0ebe2;
+        --paper: #f4f0e8;
+        --ink: #1f1d1a;
+        --muted: #5f584e;
+        --panel: #fffdf8;
+        --line: #d8cfbf;
+        --accent: #0d6d72;
+        --accent-2: #0f8f67;
+        --accent-soft: #d7f0e6;
+        --code: #f2ebe0;
       }
 
       * {
         box-sizing: border-box;
       }
 
+      html,
       body {
         margin: 0;
-        font-family: Charter, "Palatino Linotype", "Book Antiqua", Palatino, serif;
+        padding: 0;
+      }
+
+      body {
         color: var(--ink);
+        font-family: "Palatino Linotype", Palatino, "Book Antiqua", Georgia, serif;
         background:
-          radial-gradient(circle at 20% 0%, #fff8ea 0%, transparent 45%),
-          radial-gradient(circle at 100% 10%, #d9f2e8 0%, transparent 35%),
-          var(--bg);
-        line-height: 1.55;
+          radial-gradient(900px 500px at -10% -10%, #fff8dd 0%, transparent 55%),
+          radial-gradient(700px 420px at 110% 5%, #d7ebf5 0%, transparent 45%),
+          linear-gradient(180deg, #f8f4ec 0%, var(--paper) 45%, #efe8da 100%);
+        line-height: 1.56;
+      }
+
+      .backdrop {
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        background-image:
+          linear-gradient(rgba(25, 20, 12, 0.03) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(25, 20, 12, 0.03) 1px, transparent 1px);
+        background-size: 24px 24px;
+        mask-image: radial-gradient(circle at center, black 60%, transparent 100%);
       }
 
       .wrap {
-        width: min(980px, 92vw);
-        margin: 2.4rem auto 3rem;
+        width: min(1100px, 92vw);
+        margin: 2rem auto 3rem;
+        position: relative;
+        z-index: 1;
       }
 
       .hero {
         border: 1px solid var(--line);
-        background: linear-gradient(145deg, #fffdf9 0%, #f8f3ea 100%);
-        border-radius: 16px;
-        padding: 1.8rem 1.4rem;
-        box-shadow: 0 8px 22px rgba(37, 33, 25, 0.08);
+        border-radius: 20px;
+        background:
+          linear-gradient(140deg, #fffdfa 0%, #f5efe3 55%, #e9f4ef 100%);
+        box-shadow: 0 18px 40px rgba(33, 26, 16, 0.12);
+        padding: 1.6rem;
+        animation: rise 520ms ease-out both;
+      }
+
+      .eyebrow {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.45rem;
+        border: 1px solid #b9ded3;
+        background: #ecf9f4;
+        color: #0f5d49;
+        border-radius: 999px;
+        font-size: 0.8rem;
+        padding: 0.2rem 0.65rem;
+        margin-bottom: 0.8rem;
       }
 
       h1 {
         margin: 0;
-        font-size: clamp(1.8rem, 3.8vw, 2.7rem);
-        letter-spacing: 0.02em;
+        font-size: clamp(2rem, 5vw, 3.2rem);
+        letter-spacing: 0.01em;
       }
 
-      .tagline {
-        margin-top: 0.55rem;
+      .lead {
+        margin: 0.55rem 0 0;
         color: var(--muted);
-        font-size: 1.04rem;
+        max-width: 64ch;
       }
 
-      .badge-row {
+      .hero-grid {
+        display: grid;
+        grid-template-columns: 1.4fr 1fr;
+        gap: 0.9rem;
         margin-top: 1rem;
+      }
+
+      .meta {
+        border: 1px solid var(--line);
+        border-radius: 14px;
+        background: #fffcf6;
+        padding: 0.8rem;
+      }
+
+      .meta h2 {
+        margin: 0 0 0.45rem;
+        font-size: 1rem;
+        color: var(--accent);
+      }
+
+      .meta ul {
+        margin: 0;
+        padding-left: 1rem;
+      }
+
+      .meta li {
+        margin: 0.18rem 0;
+      }
+
+      .nav {
+        margin-top: 0.9rem;
+        padding: 0.55rem;
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        background: rgba(255, 253, 248, 0.9);
+        backdrop-filter: blur(4px);
         display: flex;
         flex-wrap: wrap;
-        gap: 0.5rem;
+        gap: 0.45rem;
+        position: sticky;
+        top: 10px;
       }
 
-      .badge {
-        border: 1px solid #b5d8cc;
-        background: #eaf8f2;
-        color: #124d3f;
+      .nav a {
+        text-decoration: none;
+        color: #154f57;
+        border: 1px solid #b8d6dc;
+        background: #edf7f9;
         border-radius: 999px;
-        padding: 0.22rem 0.7rem;
+        padding: 0.2rem 0.65rem;
         font-size: 0.86rem;
       }
 
       .grid {
+        margin-top: 1rem;
         display: grid;
         grid-template-columns: repeat(12, 1fr);
-        gap: 0.95rem;
-        margin-top: 1rem;
+        gap: 0.9rem;
       }
 
-      .card {
+      section.card {
         grid-column: span 12;
         border: 1px solid var(--line);
-        border-radius: 12px;
+        border-radius: 14px;
         background: var(--panel);
         padding: 1rem;
-        box-shadow: 0 6px 18px rgba(24, 20, 14, 0.05);
+        box-shadow: 0 8px 20px rgba(25, 20, 12, 0.08);
+        animation: rise 520ms ease-out both;
       }
 
-      @media (min-width: 900px) {
-        .card-half {
-          grid-column: span 6;
-        }
+      section.card:nth-child(2) {
+        animation-delay: 70ms;
+      }
+
+      section.card:nth-child(3) {
+        animation-delay: 130ms;
+      }
+
+      section.card:nth-child(4) {
+        animation-delay: 190ms;
+      }
+
+      section.card:nth-child(5) {
+        animation-delay: 250ms;
+      }
+
+      .two {
+        grid-column: span 6;
       }
 
       h2 {
-        margin: 0 0 0.55rem;
-        color: var(--brand);
-        font-size: 1.18rem;
+        margin: 0 0 0.6rem;
+        color: var(--accent);
+        font-size: 1.2rem;
+      }
+
+      h3 {
+        margin: 0.8rem 0 0.35rem;
+        color: #1b5553;
+        font-size: 1rem;
       }
 
       p {
-        margin: 0.5rem 0;
+        margin: 0.45rem 0;
       }
 
       ul {
-        margin: 0.35rem 0 0.2rem 1.1rem;
+        margin: 0.35rem 0;
+        padding-left: 1.1rem;
       }
 
       code,
       pre {
-        font-family: "Iosevka Term", "SFMono-Regular", Menlo, Consolas, monospace;
+        font-family: "Courier Prime", "Iosevka Term", "SFMono-Regular", Consolas, monospace;
       }
 
       pre {
-        margin: 0.55rem 0 0;
-        background: var(--code-bg);
-        border: 1px solid #d8cfbf;
+        margin: 0.5rem 0;
+        background: var(--code);
+        border: 1px solid #d6cbb8;
         border-radius: 10px;
         padding: 0.75rem;
         overflow-x: auto;
-        font-size: 0.88rem;
+        font-size: 0.9rem;
       }
 
-      .tip {
-        margin-top: 0.45rem;
-        padding: 0.6rem 0.72rem;
-        border-left: 4px solid var(--brand-2);
-        background: #eef8f4;
-        color: #153d32;
+      .cmd {
+        border-left: 4px solid var(--accent-2);
+        background: var(--accent-soft);
+        color: #114032;
+        padding: 0.62rem 0.72rem;
         border-radius: 8px;
+      }
+
+      .split {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0.7rem;
       }
 
       .footer {
         margin-top: 1rem;
         color: var(--muted);
-        font-size: 0.9rem;
         text-align: center;
+        font-size: 0.92rem;
       }
 
-      .footer code {
-        color: #1a5041;
+      @media (max-width: 920px) {
+        .hero-grid,
+        .split {
+          grid-template-columns: 1fr;
+        }
+
+        .two {
+          grid-column: span 12;
+        }
+      }
+
+      @keyframes rise {
+        from {
+          transform: translateY(8px);
+          opacity: 0;
+        }
+
+        to {
+          transform: translateY(0);
+          opacity: 1;
+        }
       }
     </style>
   </head>
   <body>
+    <div class="backdrop" aria-hidden="true"></div>
     <main class="wrap">
-      <section class="hero">
-        <h1>Welcome to Buoy</h1>
-        <p class="tagline">
-          A small language with a practical compiler pipeline and multi-target code generation.
+      <header class="hero" id="top">
+        <div class="eyebrow">Buoy Docs Site</div>
+        <h1>Fast Language, Explicit Costs</h1>
+        <p class="lead">
+          Buoy is a speed-first language: bytecode-oriented, deterministic syntax, and explicit runtime tradeoffs.
+          This page is fully local and openable directly as <code>docs/welcome.html</code>.
         </p>
-        <div class="badge-row">
-          <span class="badge">Source: <code>.by</code></span>
-          <span class="badge">Targets: perl / ocaml / go / bytecode</span>
-          <span class="badge">keyword ... end blocks</span>
+        <div class="hero-grid">
+          <div class="meta">
+            <h2>At a Glance</h2>
+            <ul>
+              <li>Source extension: <code>.by</code></li>
+              <li>Targets: <code>perl</code>, <code>ocaml</code>, <code>go</code>, <code>bytecode</code></li>
+              <li>Canonical style: keyword headers + <code>end</code></li>
+            </ul>
+          </div>
+          <div class="meta">
+            <h2>Language Priorities</h2>
+            <ul>
+              <li>Translate to S-exprs by syntax form only</li>
+              <li>No significant whitespace</li>
+              <li>No implicit closures in core profile</li>
+            </ul>
+          </div>
         </div>
-      </section>
+      </header>
 
-      <section class="grid">
-        <article class="card card-half">
-          <h2>1) First Program</h2>
-          <pre><code>let name = "World"
-println("Hello, " ++ name ++ "!")</code></pre>
-          <pre><code>opam exec -- ./_build/default/bin/buoy.exe hello.by --target perl &gt; hello.pl
-perl hello.pl</code></pre>
-        </article>
+      <nav class="nav" aria-label="Sections">
+        <a href="#quickstart">Quickstart</a>
+        <a href="#language">Language</a>
+        <a href="#examples">Examples</a>
+        <a href="#sexpr">S-Expr Lowering</a>
+        <a href="#performance">Performance</a>
+      </nav>
 
-        <article class="card card-half">
-          <h2>2) Build and Test</h2>
+      <div class="grid">
+        <section class="card two" id="quickstart">
+          <h2>Quickstart</h2>
           <pre><code>opam exec -- dune build
-opam exec -- dune runtest</code></pre>
-          <div class="tip">
-            If <code>opam</code> is already active in your shell, you can omit <code>opam exec --</code>.
+opam exec -- ./_build/default/bin/buoy.exe examples/hello.by --target perl &gt; hello.pl
+perl hello.pl</code></pre>
+          <p class="cmd">Run all conformance checks: <code>./scripts/check-conformance.sh</code></p>
+        </section>
+
+        <section class="card two" id="language">
+          <h2>Language Section</h2>
+          <h3>Core Forms</h3>
+          <pre><code>type age = int
+enum color do
+  red
+  green
+  blue
+end
+
+let x = 1
+x = x + 1
+
+if x &gt; 0 then
+  println("ok")
+else
+  println("no")
+end
+
+while x &lt; 10 do
+  x = x + 1
+end
+
+foreach item in [1, 2, 3] do
+  println(string_of(item))
+end</code></pre>
+          <p>Block syntax is keyword/end only (`then`, `with`, `do` ... `end`).</p>
+        </section>
+
+        <section class="card" id="examples">
+          <h2>Examples</h2>
+          <div class="split">
+            <div>
+              <h3>Match With Cases</h3>
+              <pre><code>let total = 6
+match total with
+  | 0 -&gt; println("zero")
+  | 6 -&gt; println("six")
+  | _ -&gt; println("other")
+end</code></pre>
+            </div>
+            <div>
+              <h3>Loop Control</h3>
+              <pre><code>let i = 0
+while i &lt; 10 do
+  i = i + 1
+  if i == 3 then
+    continue
+  end
+  if i == 7 then
+    break
+  end
+end</code></pre>
+            </div>
           </div>
-        </article>
+          <h3>Host FFI</h3>
+          <pre><code>let ms = $time/now_ms
+let sum = &amp;math/add(20, 22)
+println(string_of(ms))
+println(string_of(sum))</code></pre>
+        </section>
 
-        <article class="card card-half">
-          <h2>3) Core Syntax</h2>
-          <ul>
-            <li><code>let x = 1</code>, <code>x = x + 1</code></li>
-            <li><code>if cond then ... else ... end</code></li>
-            <li><code>while cond do ... end</code></li>
-            <li><code>for item in items do ... end</code></li>
-            <li><code>fn add x, y { return x + y }</code></li>
-            <li><code>rec fn fact n { ... }</code></li>
-            <li>No implicit lambdas/closures in the speed-first profile</li>
-          </ul>
-        </article>
-
-        <article class="card card-half">
-          <h2>4) FFI Host Syntax</h2>
-          <ul>
-            <li>Read: <code>$foo/bar</code></li>
-            <li>Call: <code>&amp;foo/bar(1, 2)</code></li>
-          </ul>
-          <pre><code>BUOY_PERL_HOST=runtime/perl_host_default.pl perl hello.pl</code></pre>
-        </article>
-
-        <article class="card card-half">
-          <h2>5) Benchmark Mode</h2>
-          <pre><code>opam exec -- ./_build/default/bin/buoy.exe benchmarks/prime_count.by \
-  --benchmark benchmarks/prime_count.pl \
-  --iterations 10</code></pre>
-        </article>
-
-        <article class="card card-half">
-          <h2>6) Conformance Check</h2>
-          <pre><code>./scripts/check-conformance.sh</code></pre>
-          <p>Runs build/tests plus compile/runtime checks against the implemented spec.</p>
-        </article>
-
-        <article class="card">
-          <h2>Where to Read Next</h2>
-          <ul>
-            <li><code>LANG_SPEC.md</code> (normative language behavior)</li>
-            <li><code>CONFORMANCE_REPORT.md</code> (latest conformance run)</li>
-            <li><code>examples/*.by</code> (small working programs)</li>
-          </ul>
-          <div class="tip">
-            Open this file locally: <code>docs/welcome.html</code>
+        <section class="card" id="sexpr">
+          <h2>Form-Only S-Expr Lowering</h2>
+          <p>Buoy is designed so syntax lowers deterministically to S-expr-like canonical forms without semantic analysis.</p>
+          <div class="split">
+            <div>
+              <h3>Surface</h3>
+              <pre><code>if x &gt; 0 then
+  y = y + 1
+else
+  y = 0
+end</code></pre>
+            </div>
+            <div>
+              <h3>Shape</h3>
+              <pre><code>(if (&gt; x 0)
+  (do (set y (+ y 1)))
+  (do (set y 0)))</code></pre>
+            </div>
           </div>
-        </article>
-      </section>
+        </section>
 
-      <p class="footer">
-        Local doc page for the Buoy repository. No build step required.
-      </p>
+        <section class="card" id="performance">
+          <h2>Performance Profile</h2>
+          <ul>
+            <li>Bytecode target is optimization anchor.</li>
+            <li>Syntax favors deterministic parsing and cheap lowering.</li>
+            <li>No implicit closure/lambda syntax in the core profile.</li>
+            <li>Runtime-costly features should be explicit and opt-in.</li>
+          </ul>
+          <h3>Handy Commands</h3>
+          <pre><code>opam exec -- ./_build/default/bin/buoy.exe examples/arrays.by --target go
+opam exec -- ./_build/default/bin/buoy.exe benchmarks/prime_count.by --target bytecode
+opam exec -- ./_build/default/bin/buoy.exe benchmarks/prime_count.by --benchmark benchmarks/prime_count.pl --iterations 10</code></pre>
+        </section>
+      </div>
+
+      <p class="footer">Buoy local docs page. Open directly from disk, no build step required.</p>
     </main>
   </body>
 </html>

@@ -2,23 +2,23 @@ let limit = 20000
 let i = 2
 let count = 0
 
-while i <= limit {
+while i <= limit do
   let j = 2
   let is_prime = true
 
-  while (j * j) <= i {
-    if (i % j) == 0 {
+  while (j * j) <= i do
+    if (i % j) == 0 then
       is_prime = false
       j = i
-    }
+    end
     j = j + 1
-  }
+  end
 
-  if is_prime {
+  if is_prime then
     count = count + 1
-  }
+  end
 
   i = i + 1
-}
+end
 
 println(string_of(count))

@@ -19,17 +19,17 @@ let reversed = reverse(items)
 println("Reversed: " ++ join(", ", reversed))
 
 let doubled = []
-for x in items {
+for x in items do
   push(doubled, x * 2)
-}
+end
 println("Doubled: " ++ join(", ", doubled))
 
 let evens = []
-for x in items {
-  if x % 2 == 0 {
+for x in items do
+  if x % 2 == 0 then
     push(evens, x)
-  }
-}
+  end
+end
 println("Evens: " ++ join(", ", evens))
 
 let nums = [1, 2, 2, 3, 3, 3]
@@ -38,14 +38,14 @@ println("Unique: " ++ join(", ", uniq))
 
 # Iteration
 print("Each: ")
-for x in items {
+for x in items do
   print(string_of(x) ++ " ")
-}
+end
 println("")
 
 # For loop
 print("For: ")
-for item in items {
+for item in items do
   print(string_of(item) ++ " ")
-}
+end
 println("")

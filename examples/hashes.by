@@ -11,9 +11,9 @@ println("Keys count: " ++ string_of(length(k)))
 let v = values(colors)
 println("Values count: " ++ string_of(length(v)))
 
-if exists(colors["banana"]) {
+if exists(colors["banana"]) then
   println("banana exists")
-}
+end
 
 delete(colors["grape"])
 println("After delete, keys: " ++ string_of(length(keys(colors))))

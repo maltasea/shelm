@@ -15,35 +15,48 @@ let target_of_string = function
 
 let parse_legacy ?(module_name = "") (source : string) :
   (Ast.program, Errors.compile_error) result =
-  let source = Reader.rewrite_source ~module_name source in
-  let source =
-    if String.length source > 0 && source.[String.length source - 1] <> '\n'
-    then source ^ "\n"
-    else source
+  let rewritten =
+    try Ok (Reader.rewrite_source ~module_name source) with
+    | Reader.Reader_error { line; message } ->
+      Error (Errors.Parse_error {
+        line;
+        column = 0;
+        char_pos = 0;
+        module_name;
+        message;
+      })
   in
-  let lexbuf = Lexing.from_string source in
-  Lexer.prev_was_expr_end := false;
-  try
-    Ok (Parser.program Lexer.token lexbuf)
-  with
-  | Parser.Error ->
-    let pos = Lexing.lexeme_start_p lexbuf in
-    Error (Errors.Parse_error {
-      line = pos.pos_lnum;
-      column = pos.pos_cnum - pos.pos_bol;
-      char_pos = pos.pos_cnum;
-      module_name;
-      message = "Parse error";
-    })
-  | Lexer.Lexer_error msg ->
-    let pos = Lexing.lexeme_start_p lexbuf in
-    Error (Errors.Parse_error {
-      line = pos.pos_lnum;
-      column = pos.pos_cnum - pos.pos_bol;
-      char_pos = pos.pos_cnum;
-      module_name;
-      message = msg;
-    })
+  match rewritten with
+  | Error _ as e -> e
+  | Ok rewritten ->
+    let rewritten =
+      if String.length rewritten > 0 && rewritten.[String.length rewritten - 1] <> '\n'
+      then rewritten ^ "\n"
+      else rewritten
+    in
+    let lexbuf = Lexing.from_string rewritten in
+    Lexer.prev_was_expr_end := false;
+    try
+      Ok (Parser.program Lexer.token lexbuf)
+    with
+    | Parser.Error ->
+      let pos = Lexing.lexeme_start_p lexbuf in
+      Error (Errors.Parse_error {
+        line = pos.pos_lnum;
+        column = pos.pos_cnum - pos.pos_bol;
+        char_pos = pos.pos_cnum;
+        module_name;
+        message = "Parse error";
+      })
+    | Lexer.Lexer_error msg ->
+      let pos = Lexing.lexeme_start_p lexbuf in
+      Error (Errors.Parse_error {
+        line = pos.pos_lnum;
+        column = pos.pos_cnum - pos.pos_bol;
+        char_pos = pos.pos_cnum;
+        module_name;
+        message = msg;
+      })
 
 let parse (source : string) : Ast.program =
   match parse_legacy source with

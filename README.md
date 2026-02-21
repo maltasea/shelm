@@ -82,17 +82,15 @@
 
   - printf "%s", concat ("ass", "hole")
 
-  3. Brace block syntax is canonical:
+  3. Keyword/end block syntax is canonical and enforced:
 
-  - if cond { ... } else { ... }
-  - while cond { ... }
-  - for x in xs { ... }
+  - if cond then ... end
+  - while cond do ... end
+  - for x in xs do ... end
+  - match x with | ... -> ... end
+  - fn name ... do ... end
 
-  4. do/end block syntax remains supported as deprecated compatibility sugar:
-
-  - if cond do ... end
-  - else do
-  - else if cond do
+  4. Brace and colon block forms are rejected at reader level.
   5. Symbols allow - and ?.
   6. Regex shorthand #"...“ is intended language syntax (must not conflict with comment handling).
 

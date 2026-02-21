@@ -26,37 +26,26 @@ let assert_contains label hay needle =
   if not (contains_substring hay needle) then
     failwith (Printf.sprintf "%s: expected generated code to contain %S" label needle)
 
-let test_brace_blocks () =
-  let source =
-    {|
-let x = 3
-if x > 2 {
-  println("ok")
-} else {
-  println("no")
-}
-while x > 0 {
-  x = x - 1
-}
-|}
-  in
-  let code = compile_perl source in
-  assert_contains "brace-if" code "if (($x > 2)) {";
-  assert_contains "brace-else" code "} else {";
-  assert_contains "brace-while" code "while (($x > 0)) {"
+let assert_parse_error_contains label source needle =
+  match compile_perl_result source with
+  | Ok _ -> failwith (Printf.sprintf "%s: expected parse error" label)
+  | Error err ->
+    let msg = Buoy_lib.Errors.format_error err in
+    if not (contains_substring msg needle) then
+      failwith (Printf.sprintf "%s: expected error containing %S, got: %s" label needle msg)
 
 let test_optional_paren_fn_defs () =
   let source =
     {|
-fn add x, y {
+fn add x, y do
   return x + y
-}
-rec fn fact n {
-  if n <= 1 {
+end
+rec fn fact n do
+  if n <= 1 then
     return 1
-  }
+  end
   return n * fact(n - 1)
-}
+end
 println(string_of(add(2, 3)))
 println(string_of(fact(6)))
 |}
@@ -71,9 +60,9 @@ let test_index_not_rewritten_as_call () =
   let source =
     {|
 let colors = {"banana": "yellow"}
-if exists(colors["banana"]) {
+if exists(colors["banana"]) then
   println("ok")
-}
+end
 delete(colors["banana"])
 |}
   in
@@ -85,17 +74,11 @@ let test_match_case_compile () =
   let source =
     {|
 let x = 2
-match x {
-  case 1 {
-    println("one")
-  }
-  case 2 {
-    println("two")
-  }
-  case _ {
-    println("other")
-  }
-}
+match x with
+  | 1 -> println("one")
+  | 2 -> println("two")
+  | _ -> println("other")
+end
 |}
   in
   let code = compile_perl source in
@@ -108,20 +91,16 @@ let test_type_enum_compile () =
   let source =
     {|
 type age = int
-enum color {
+enum color do
   red
   green
   blue
-}
+end
 let c = green
-match c {
-  case red {
-    println("r")
-  }
-  case _ {
-    println("x")
-  }
-}
+match c with
+  | red -> println("r")
+  | _ -> println("x")
+end
 |}
   in
   let code = compile_perl source in
@@ -134,15 +113,15 @@ let test_break_continue_compile () =
   let source =
     {|
 let i = 0
-while i < 10 {
+while i < 10 do
   i = i + 1
-  if i == 3 {
+  if i == 3 then
     continue
-  }
-  if i == 7 {
+  end
+  if i == 7 then
     break
-  }
-}
+  end
+end
 |}
   in
   let code = compile_perl source in
@@ -162,37 +141,38 @@ let f = fn(x) { x * 2 }
     if not (contains_substring msg "Parse error") then
       failwith (Printf.sprintf "expected parse error for lambda, got: %s" msg)
 
-let test_colon_end_blocks_compile () =
+let test_brace_blocks_rejected () =
+  let source =
+    {|
+let x = 3
+if x > 2 {
+  println("ok")
+}
+|}
+  in
+  assert_parse_error_contains "brace-blocks" source "Brace blocks are not supported"
+
+let test_colon_blocks_rejected () =
   let source =
     {|
 let x = 3
 if x > 2:
   println("ok")
-else:
-  println("no")
-end
-while x > 0:
-  x = x - 1
-  if x == 1:
-    break
-  end
-end
-match x:
-  case 1:
-    println("one")
-  end
-  case _:
-    println("other")
-  end
 end
 |}
   in
-  let code = compile_perl source in
-  assert_contains "colon-if" code "if (($x > 2)) {";
-  assert_contains "colon-else" code "} else {";
-  assert_contains "colon-while" code "while (($x > 0)) {";
-  assert_contains "colon-match" code "my $__match_1 = $x;";
-  assert_contains "colon-case" code "if (buoy_match_eq($__match_1, 1)) {"
+  assert_parse_error_contains "colon-blocks" source "Colon blocks are not supported"
+
+let test_if_do_rejected () =
+  let source =
+    {|
+let x = 1
+if x == 1 do
+  println("ok")
+end
+|}
+  in
+  assert_parse_error_contains "if-do" source "`if ... do` is not supported"
 
 let test_keyword_end_blocks_compile () =
   let source =
@@ -246,13 +226,14 @@ let run name f =
     exit 1
 
 let () =
-  run "brace blocks compile" test_brace_blocks;
   run "optional-paren fn defs compile" test_optional_paren_fn_defs;
   run "index syntax stays index" test_index_not_rewritten_as_call;
   run "match/case compile" test_match_case_compile;
   run "type/enum compile" test_type_enum_compile;
   run "break/continue compile" test_break_continue_compile;
   run "lambda rejected" test_lambda_rejected;
-  run "colon/end blocks compile" test_colon_end_blocks_compile;
+  run "brace blocks rejected" test_brace_blocks_rejected;
+  run "colon blocks rejected" test_colon_blocks_rejected;
+  run "if-do rejected" test_if_do_rejected;
   run "keyword/end blocks compile" test_keyword_end_blocks_compile;
   Printf.printf "all syntax tests passed\n%!"

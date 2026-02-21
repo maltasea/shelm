@@ -7,6 +7,7 @@ This document is the normative language spec for the current implementation in t
 - Source file extension: `.by`
 - Compiler entrypoint: `bin/buoy.ml`
 - Frontend pipeline: `reader -> lexer -> parser -> tuple AST -> normalize -> macro_expand`
+- Dedicated syntax grammar: `SYNTAX_SPEC.md`
 - Language policy: speed-first, bytecode-first. Features with hidden runtime costs are excluded by default.
 
 ## Lexical Rules
@@ -26,7 +27,7 @@ This document is the normative language spec for the current implementation in t
 
 ## Source Rewriting (Reader Layer)
 
-The reader supports compatibility sugar and normalizes source before lexing/parsing.
+The reader enforces keyword/end block syntax and normalizes source before lexing/parsing.
 
 ### Canonical Block Form
 
@@ -35,19 +36,16 @@ The reader supports compatibility sugar and normalizes source before lexing/pars
   - `while cond do ... end`
   - `for x in xs do ... end`
   - `foreach x in xs do ... end`
+  - `enum name do ... end`
   - `fn name ... do ... end`
   - `match expr with ... end`
-- Brace blocks and colon/end blocks are still accepted for compatibility.
-
-### Deprecated Compatibility Form
-
-- Legacy `if ... do`/`elif ... do`/`else do` conditional style is accepted and rewritten.
-- The compiler prints a deprecation warning with line numbers when those forms are used.
+- Brace/colon block forms are rejected.
+- `if ... do`/`elif ... do`/`else do` are rejected.
 
 ### Additional Reader Sugar
 
-- `unless cond { body }` rewrites to `if not (cond) { body }`
-- `foreach x in xs { ... }` rewrites to `for x in xs { ... }`
+- `unless cond do ... end` rewrites to `if not (cond) ... end`
+- `foreach x in xs do ... end` rewrites to `for x in xs do ... end`
 - Call sugar rewrites:
   - `print x` -> `print(x)`
   - `f a, b` -> `f(a, b)`
@@ -74,27 +72,22 @@ The reader supports compatibility sugar and normalizes source before lexing/pars
 ## Statements
 
 - `type Name = expr` (compile-time declaration)
-- `enum Name { variant ... }`
+- `enum Name do ... end`
 - `let name = expr`
 - `name = expr`
 - `target[index] = expr`
-- `if cond { ... }`
-- `if cond { ... } else { ... }`
 - `if cond then ... elif cond then ... else ... end`
-- `match expr { case pattern { ... } ... }`
 - `match expr with | pattern -> ... end`
-- `while cond { ... }`
-- `for name in expr { ... }`
 - `while cond do ... end`
 - `for name in expr do ... end`
 - `foreach name in expr do ... end`
 - `break`
 - `continue`
 - Function definitions:
-  - `fn name { ... }`
-  - `fn name x { ... }`
-  - `fn name x, y { ... }`
-  - `fn name(x, y) { ... }`
+  - `fn name do ... end`
+  - `fn name x do ... end`
+  - `fn name x, y do ... end`
+  - `fn name(x, y) do ... end`
   - `fn name ... do ... end`
   - `rec fn ...` variants are also supported.
 - `return expr` (expression is required)
@@ -166,7 +159,7 @@ match x with
 end
 ```
 
-Brace and colon case forms remain accepted for compatibility.
+`case` block forms are not accepted in source; use `| pattern -> ...`.
 
 ## Type / Enum
 
@@ -175,7 +168,12 @@ Brace and colon case forms remain accepted for compatibility.
 - `enum` declares runtime constants for variants.
   - Runtime value format is a compact integer tag (`0..n-1` by declaration order).
   - Example:
-    - `enum color { red green }`
+    ```buoy
+    enum color do
+      red
+      green
+    end
+    ```
     - `red` and `green` become bound values.
 
 ## Loop Control
@@ -203,4 +201,4 @@ Use:
 scripts/check-conformance.sh
 ```
 
-This runs build/tests, validates CLI rules, compiles all `.by` examples/benchmarks for every target, checks deprecation warnings, and verifies benchmark mode.
+This runs build/tests, validates CLI rules, compiles all `.by` examples/benchmarks for every target, checks keyword/end-only syntax enforcement, and verifies benchmark mode.

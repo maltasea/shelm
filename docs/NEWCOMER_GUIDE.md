@@ -55,10 +55,9 @@ opam exec -- dune runtest
   - `if cond then ... else ... end`
   - `while cond do ... end`
   - `for item in items do ... end`
-- Brace blocks are also accepted.
 - Functions:
-  - `fn add x, y { return x + y }`
-  - `rec fn fact n { ... }`
+  - `fn add x, y do return x + y end`
+  - `rec fn fact n do ... end`
 - Closures/lambdas are intentionally not in the surface syntax (speed-first profile).
 - Arrays: `[1, 2, 3]`
 - Hashes: `{"a": 1, "b": 2}`

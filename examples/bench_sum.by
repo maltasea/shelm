@@ -2,9 +2,9 @@ let n = 200000
 let i = 0
 let acc = 0
 
-while i < n {
+while i < n do
   acc = acc + ((i * 3) % 97)
   i = i + 1
-}
+end
 
 println(string_of(acc))

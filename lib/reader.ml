@@ -4,6 +4,11 @@ let is_space = function
 
 let trim = String.trim
 
+exception Reader_error of {
+  line : int;
+  message : string;
+}
+
 let is_symbol_start = function
   | 'a' .. 'z' | 'A' .. 'Z' | '_' -> true
   | _ -> false
@@ -34,23 +39,13 @@ let strip_trailing_keyword s kw =
   else
     None
 
-let strip_trailing_colon s =
-  let t = trim s in
-  let n = String.length t in
-  if n > 0 && t.[n - 1] = ':' then
-    Some (trim (String.sub t 0 (n - 1)))
-  else
-    None
-
 let strip_trailing_block_opener s =
+  strip_trailing_keyword s "do"
+
+let ends_with_char s ch =
   let t = trim s in
   let n = String.length t in
-  if n > 0 && t.[n - 1] = '{' then
-    Some (trim (String.sub t 0 (n - 1)))
-  else
-    match strip_trailing_colon t with
-    | Some h -> Some h
-    | None -> strip_trailing_keyword t "do"
+  n > 0 && t.[n - 1] = ch
 
 let starts_with_keyword s kw =
   let n = String.length kw in
@@ -507,11 +502,7 @@ let rewrite_keyword_blocks (lines : string list) : string list =
         loop (close_end acc) rest
       else if starts_with_keyword t "if" then
         let tail = trim (String.sub t 2 (String.length t - 2)) in
-        let cond_opt =
-          match strip_trailing_keyword tail "then" with
-          | Some c -> Some c
-          | None -> strip_trailing_keyword tail "do"
-        in
+        let cond_opt = strip_trailing_keyword tail "then" in
         begin match cond_opt with
         | Some cond ->
           loop (open_regular (Printf.sprintf "if %s {" (normalize_expr cond)) acc) rest
@@ -520,11 +511,7 @@ let rewrite_keyword_blocks (lines : string list) : string list =
         end
       else if starts_with_keyword t "elif" then
         let tail = trim (String.sub t 4 (String.length t - 4)) in
-        let cond_opt =
-          match strip_trailing_keyword tail "then" with
-          | Some c -> Some c
-          | None -> strip_trailing_keyword tail "do"
-        in
+        let cond_opt = strip_trailing_keyword tail "then" in
         begin match cond_opt with
         | Some cond ->
           loop ((Printf.sprintf "} else if %s {" (normalize_expr cond)) :: acc) rest
@@ -547,6 +534,14 @@ let rewrite_keyword_blocks (lines : string list) : string list =
                               && normalized.[String.length normalized - 1] = '{' ->
           loop (open_regular normalized acc) rest
         | _ ->
+          loop (line :: acc) rest
+        end
+      else if starts_with_keyword t "enum" then
+        let tail = trim (String.sub t 4 (String.length t - 4)) in
+        begin match strip_trailing_keyword tail "do" with
+        | Some name ->
+          loop (open_regular (Printf.sprintf "enum %s {" (trim name)) acc) rest
+        | None ->
           loop (line :: acc) rest
         end
       else if starts_with_keyword t "fn"
@@ -668,41 +663,87 @@ let normalize_line line =
           end
       end
 
-let uses_do_end_syntax line =
-  let t = trim line in
-  (starts_with_keyword t "if" && ends_with_keyword t "do")
-  || (starts_with_keyword t "elif" && ends_with_keyword t "do")
-  || (starts_with_keyword t "else if" && ends_with_keyword t "do")
-  || t = "else do"
-  || (starts_with_keyword t "unless" && ends_with_keyword t "do")
+let is_rec_fn_header t =
+  starts_with_keyword t "rec"
+  && let rest = trim (String.sub t 3 (String.length t - 3)) in
+     starts_with_keyword rest "fn"
 
-let collect_do_end_lines lines =
-  let rec loop i acc = function
-    | [] -> List.rev acc
-    | line :: rest ->
-      if uses_do_end_syntax line then
-        loop (i + 1) (i :: acc) rest
-      else
-        loop (i + 1) acc rest
+let reject line_no message =
+  raise (Reader_error { line = line_no; message })
+
+let validate_source_syntax (lines : string list) : unit =
+  let check_header line_no t kw sample =
+    if ends_with_keyword t kw then
+      ()
+    else if ends_with_char t ':' then
+      reject line_no (Printf.sprintf "Colon blocks are not supported; use `%s`." sample)
+    else if find_top_level t '{' <> None || t = "}" then
+      reject line_no (Printf.sprintf "Brace blocks are not supported; use `%s`." sample)
+    else
+      ()
   in
-  loop 1 [] lines
-
-let warn_do_end_deprecated ?(module_name = "") lines =
-  if lines <> [] then
-    let prefix =
-      if module_name = "" then
-        ""
-      else
-        module_name ^ ": "
-    in
-    let line_list = String.concat ", " (List.map string_of_int lines) in
-    prerr_endline
-      (Printf.sprintf
-         "Warning: %sdo/end block syntax is deprecated; use if ... then ... end (line(s): %s)."
-         prefix line_list)
+  let rec loop line_no = function
+    | [] -> ()
+    | line :: rest ->
+      let t = trim line in
+      if t = "" || (String.length t > 0 && t.[0] = '#') then
+        loop (line_no + 1) rest
+      else if t = "}" then
+        reject line_no "Brace blocks are not supported; use `end`."
+      else if starts_with_keyword t "else if" then
+        reject line_no "Use `elif ... then` instead of `else if`."
+      else if starts_with_keyword t "case" then
+        reject line_no "Case blocks are not supported in source; use `| pattern -> ...` inside `match ... with`."
+      else if starts_with_keyword t "if" then begin
+        if ends_with_keyword t "do" then
+          reject line_no "`if ... do` is not supported; use `if ... then`."
+        else
+          check_header line_no t "then" "if <cond> then ... end";
+        loop (line_no + 1) rest
+      end else if starts_with_keyword t "elif" then begin
+        if ends_with_keyword t "do" then
+          reject line_no "`elif ... do` is not supported; use `elif ... then`."
+        else
+          check_header line_no t "then" "elif <cond> then ... end";
+        loop (line_no + 1) rest
+      end else if t = "else" then
+        loop (line_no + 1) rest
+      else if starts_with_keyword t "else" then begin
+        if t = "else do" then
+          reject line_no "`else do` is not supported; use `else`."
+        else if ends_with_char t ':' then
+          reject line_no "Colon blocks are not supported; use `else ... end`."
+        else if find_top_level t '{' <> None then
+          reject line_no "Brace blocks are not supported; use `else ... end`."
+        else
+          ();
+        loop (line_no + 1) rest
+      end else if starts_with_keyword t "while" then begin
+        check_header line_no t "do" "while <cond> do ... end";
+        loop (line_no + 1) rest
+      end else if starts_with_keyword t "for" || starts_with_keyword t "foreach" then begin
+        check_header line_no t "do" "for <name> in <expr> do ... end";
+        loop (line_no + 1) rest
+      end else if starts_with_keyword t "enum" then begin
+        check_header line_no t "do" "enum <name> do ... end";
+        loop (line_no + 1) rest
+      end else if starts_with_keyword t "fn" || is_rec_fn_header t then begin
+        check_header line_no t "do" "fn <name> ... do ... end";
+        loop (line_no + 1) rest
+      end else if starts_with_keyword t "match" then begin
+        check_header line_no t "with" "match <expr> with ... end";
+        loop (line_no + 1) rest
+      end else if starts_with_keyword t "unless" then begin
+        check_header line_no t "do" "unless <cond> do ... end";
+        loop (line_no + 1) rest
+      end else
+        loop (line_no + 1) rest
+  in
+  loop 1 lines
 
 let rewrite_source ?(module_name = "") (source : string) : string =
   let lines = String.split_on_char '\n' source in
-  warn_do_end_deprecated ~module_name (collect_do_end_lines lines);
+  let _ = module_name in
+  validate_source_syntax lines;
   let lines = rewrite_keyword_blocks lines in
   String.concat "\n" (List.map normalize_line lines)
