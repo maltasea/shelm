@@ -122,145 +122,173 @@ and gen_call func args =
   | Var "length" -> begin
     match args with
     | [e] -> Printf.sprintf "valLength(%s)" (gen_expr e)
-    | _ -> "nil"
+    | _ -> "nil /* shelm: wrong arity for length */"
+
     end
   | Var "push" -> begin
     match args with
     | arr :: rest -> Printf.sprintf "valPush(%s, %s)" (gen_expr arr) (gen_arg_array rest)
-    | _ -> "nil"
+    | _ -> "nil /* shelm: wrong arity for push */"
+
     end
   | Var "pop" -> begin
     match args with
     | [e] -> Printf.sprintf "valPop(%s)" (gen_expr e)
-    | _ -> "nil"
+    | _ -> "nil /* shelm: wrong arity for pop */"
+
     end
   | Var "shift" -> begin
     match args with
     | [e] -> Printf.sprintf "valShift(%s)" (gen_expr e)
-    | _ -> "nil"
+    | _ -> "nil /* shelm: wrong arity for shift */"
+
     end
   | Var "sort" -> begin
     match args with
     | [e] -> Printf.sprintf "valSort(%s)" (gen_expr e)
-    | _ -> "nil"
+    | _ -> "nil /* shelm: wrong arity for sort */"
+
     end
   | Var "reverse" -> begin
     match args with
     | [e] -> Printf.sprintf "valReverse(%s)" (gen_expr e)
-    | _ -> "nil"
+    | _ -> "nil /* shelm: wrong arity for reverse */"
+
     end
   | Var "keys" -> begin
     match args with
     | [e] -> Printf.sprintf "valKeys(%s)" (gen_expr e)
-    | _ -> "nil"
+    | _ -> "nil /* shelm: wrong arity for keys */"
+
     end
   | Var "values" -> begin
     match args with
     | [e] -> Printf.sprintf "valValues(%s)" (gen_expr e)
-    | _ -> "nil"
+    | _ -> "nil /* shelm: wrong arity for values */"
+
     end
   | Var "exists" -> begin
     match args with
     | [Index (e, key)] -> Printf.sprintf "valExists(%s, %s)" (gen_expr e) (gen_expr key)
-    | _ -> "false"
+    | _ -> "false /* shelm: wrong arity for exists */"
+
     end
   | Var "delete" -> begin
     match args with
     | [Index (e, key)] -> Printf.sprintf "valDelete(%s, %s)" (gen_expr e) (gen_expr key)
-    | _ -> "nil"
+    | _ -> "nil /* shelm: wrong arity for delete */"
+
     end
   | Var "map" -> begin
     match args with
     | [arr; f] -> Printf.sprintf "valMap(%s, %s)" (gen_expr arr) (gen_expr f)
-    | _ -> "nil"
+    | _ -> "nil /* shelm: wrong arity for map */"
+
     end
   | Var "filter" -> begin
     match args with
     | [arr; f] -> Printf.sprintf "valFilter(%s, %s)" (gen_expr arr) (gen_expr f)
-    | _ -> "nil"
+    | _ -> "nil /* shelm: wrong arity for filter */"
+
     end
   | Var "each" -> begin
     match args with
     | [arr; f] -> Printf.sprintf "valEach(%s, %s)" (gen_expr arr) (gen_expr f)
-    | _ -> "nil"
+    | _ -> "nil /* shelm: wrong arity for each */"
+
     end
   | Var "join" -> begin
     match args with
     | [sep; arr] -> Printf.sprintf "valJoin(%s, %s)" (gen_expr sep) (gen_expr arr)
-    | _ -> "nil"
+    | _ -> "nil /* shelm: wrong arity for join */"
+
     end
   | Var "split" -> begin
     match args with
     | [pat; str] -> Printf.sprintf "valSplit(%s, %s)" (gen_expr pat) (gen_expr str)
-    | _ -> "nil"
+    | _ -> "nil /* shelm: wrong arity for split */"
+
     end
   | Var "substr" -> begin
     match args with
     | [str; start] -> Printf.sprintf "valSubstr(%s, %s, nil)" (gen_expr str) (gen_expr start)
     | [str; start; len] ->
       Printf.sprintf "valSubstr(%s, %s, %s)" (gen_expr str) (gen_expr start) (gen_expr len)
-    | _ -> "nil"
+    | _ -> "nil /* shelm: wrong arity for substr */"
+
     end
   | Var "uppercase" -> begin
     match args with
     | [e] -> Printf.sprintf "valUppercase(%s)" (gen_expr e)
-    | _ -> "nil"
+    | _ -> "nil /* shelm: wrong arity for uppercase */"
+
     end
   | Var "lowercase" -> begin
     match args with
     | [e] -> Printf.sprintf "valLowercase(%s)" (gen_expr e)
-    | _ -> "nil"
+    | _ -> "nil /* shelm: wrong arity for lowercase */"
+
     end
   | Var "trim" -> begin
     match args with
     | [e] -> Printf.sprintf "valTrim(%s)" (gen_expr e)
-    | _ -> "nil"
+    | _ -> "nil /* shelm: wrong arity for trim */"
+
     end
   | Var "replace" -> begin
     match args with
     | [str; pat; repl] ->
       Printf.sprintf "valReplace(%s, %s, %s)" (gen_expr str) (gen_expr pat) (gen_expr repl)
-    | _ -> "nil"
+    | _ -> "nil /* shelm: wrong arity for replace */"
+
     end
   | Var "unique" -> begin
     match args with
     | [e] -> Printf.sprintf "valUnique(%s)" (gen_expr e)
-    | _ -> "nil"
+    | _ -> "nil /* shelm: wrong arity for unique */"
+
     end
   | Var "sqrt" -> begin
     match args with
     | [e] -> Printf.sprintf "valSqrt(%s)" (gen_expr e)
-    | _ -> "nil"
+    | _ -> "nil /* shelm: wrong arity for sqrt */"
+
     end
   | Var "sin" -> begin
     match args with
     | [e] -> Printf.sprintf "valSin(%s)" (gen_expr e)
-    | _ -> "nil"
+    | _ -> "nil /* shelm: wrong arity for sin */"
+
     end
   | Var "cos" -> begin
     match args with
     | [e] -> Printf.sprintf "valCos(%s)" (gen_expr e)
-    | _ -> "nil"
+    | _ -> "nil /* shelm: wrong arity for cos */"
+
     end
   | Var "abs" -> begin
     match args with
     | [e] -> Printf.sprintf "valAbs(%s)" (gen_expr e)
-    | _ -> "nil"
+    | _ -> "nil /* shelm: wrong arity for abs */"
+
     end
   | Var "log" -> begin
     match args with
     | [e] -> Printf.sprintf "valLog(%s)" (gen_expr e)
-    | _ -> "nil"
+    | _ -> "nil /* shelm: wrong arity for log */"
+
     end
   | Var "floor" -> begin
     match args with
     | [e] -> Printf.sprintf "valFloor(%s)" (gen_expr e)
-    | _ -> "nil"
+    | _ -> "nil /* shelm: wrong arity for floor */"
+
     end
   | Var "ceil" -> begin
     match args with
     | [e] -> Printf.sprintf "valCeil(%s)" (gen_expr e)
-    | _ -> "nil"
+    | _ -> "nil /* shelm: wrong arity for ceil */"
+
     end
   | Var "random" -> begin
     match args with
@@ -271,64 +299,76 @@ and gen_call func args =
   | Var "async" -> begin
     match args with
     | [e] -> Printf.sprintf "valAsync(func() Value { return %s })" (gen_expr e)
-    | _ -> "nil"
+    | _ -> "nil /* shelm: wrong arity for async */"
+
     end
   | Var "await" -> begin
     match args with
     | [e] -> Printf.sprintf "valAwait(%s)" (gen_expr e)
-    | _ -> "nil"
+    | _ -> "nil /* shelm: wrong arity for await */"
+
     end
   | Var "int_of" -> begin
     match args with
     | [e] -> Printf.sprintf "valIntOf(%s)" (gen_expr e)
-    | _ -> "nil"
+    | _ -> "nil /* shelm: wrong arity for int_of */"
+
     end
   | Var "float_of" -> begin
     match args with
     | [e] -> Printf.sprintf "valFloatOf(%s)" (gen_expr e)
-    | _ -> "nil"
+    | _ -> "nil /* shelm: wrong arity for float_of */"
+
     end
   | Var "string_of" -> begin
     match args with
     | [e] -> Printf.sprintf "valStringOf(%s)" (gen_expr e)
-    | _ -> "nil"
+    | _ -> "nil /* shelm: wrong arity for string_of */"
+
     end
   | Var "open" -> begin
     match args with
     | [e] -> Printf.sprintf "valOpen(%s, %s)" (gen_expr e) (go_quote "<")
     | [e; mode] -> Printf.sprintf "valOpen(%s, %s)" (gen_expr e) (gen_expr mode)
-    | _ -> "nil"
+    | _ -> "nil /* shelm: wrong arity for open */"
+
     end
   | Var "close" -> begin
     match args with
     | [e] -> Printf.sprintf "valClose(%s)" (gen_expr e)
-    | _ -> "nil"
+    | _ -> "nil /* shelm: wrong arity for close */"
+
     end
   | Var "readline" -> begin
     match args with
     | [e] -> Printf.sprintf "valReadline(%s)" (gen_expr e)
-    | _ -> "nil"
+    | _ -> "nil /* shelm: wrong arity for readline */"
+
     end
   | Var "read_file" -> begin
     match args with
     | [e] -> Printf.sprintf "valReadFile(%s)" (gen_expr e)
-    | _ -> "nil"
+    | _ -> "nil /* shelm: wrong arity for read_file */"
+
     end
   | Var "writeln" -> begin
     match args with
     | [fh; data] -> Printf.sprintf "valWriteln(%s, %s)" (gen_expr fh) (gen_expr data)
-    | _ -> "nil"
+    | _ -> "nil /* shelm: wrong arity for writeln */"
+
     end
   | Var "regex_match" -> begin
     match args with
     | [str; pat] -> Printf.sprintf "valRegexMatchFn(%s, %s)" (gen_expr str) (gen_expr pat)
-    | _ -> "false"
+    | _ -> "false /* shelm: wrong arity for regex_match */"
+
     end
   | Var "regex_replace" -> begin
     match args with
     | [str; pat; repl] ->
       Printf.sprintf "valRegexReplaceFn(%s, %s, %s)" (gen_expr str) (gen_expr pat) (gen_expr repl)
-    | _ -> "nil"
+    | _ -> "nil /* shelm: wrong arity for regex_replace */"
+
     end
   | Var "regex_find_all" -> begin
     match args with

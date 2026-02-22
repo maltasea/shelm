@@ -25,8 +25,8 @@ let rec expand_node ~depth n =
       message = "Maximum macro expansion depth exceeded";
     })
   else
-    let rec rewrite_until_stable current depth_left =
-      if depth_left > max_expansion_depth then
+    let rec rewrite_until_stable current rewrite_count =
+      if rewrite_count > max_expansion_depth then
         Error (Errors.Macro_error {
           where = "expand";
           message = "Maximum macro rewrite depth exceeded";
@@ -34,9 +34,9 @@ let rec expand_node ~depth n =
       else
         match apply_macro_once current with
         | None -> Ok current
-        | Some next -> rewrite_until_stable next (depth_left + 1)
+        | Some next -> rewrite_until_stable next (rewrite_count + 1)
     in
-    let* rewritten = rewrite_until_stable n depth in
+    let* rewritten = rewrite_until_stable n 0 in
     match rewritten with
     | Node (tag, meta, args) ->
       let* expanded_args = expand_list ~depth:(depth + 1) args in

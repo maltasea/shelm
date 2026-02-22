@@ -99,67 +99,177 @@ and gen_call func args =
     Printf.sprintf "val_println [%s]" (String.concat "; " arg_strs)
   | Var "print" ->
     Printf.sprintf "val_print [%s]" (String.concat "; " arg_strs)
-  | Var "length" ->
-    Printf.sprintf "val_length (%s)" (List.hd arg_strs)
-  | Var "push" ->
-    let arr = List.hd arg_strs and rest = List.tl arg_strs in
-    Printf.sprintf "val_push (%s) [%s]" arr (String.concat "; " rest)
-  | Var "pop" ->
-    Printf.sprintf "val_pop (%s)" (List.hd arg_strs)
-  | Var "shift" ->
-    Printf.sprintf "val_shift (%s)" (List.hd arg_strs)
-  | Var "sort" ->
-    Printf.sprintf "val_sort (%s)" (List.hd arg_strs)
-  | Var "reverse" ->
-    Printf.sprintf "val_reverse (%s)" (List.hd arg_strs)
-  | Var "keys" ->
-    Printf.sprintf "val_keys (%s)" (List.hd arg_strs)
-  | Var "values" ->
-    Printf.sprintf "val_values (%s)" (List.hd arg_strs)
+  | Var "length" -> begin
+    match arg_strs with
+    | [e] -> Printf.sprintf "val_length (%s)" e
+    | _ -> "VNil (* shelm: wrong arity for length *)"
+
+    end
+  | Var "push" -> begin
+    match arg_strs with
+    | arr :: rest -> Printf.sprintf "val_push (%s) [%s]" arr (String.concat "; " rest)
+    | _ -> "VNil (* shelm: wrong arity for push *)"
+
+    end
+  | Var "pop" -> begin
+    match arg_strs with
+    | [e] -> Printf.sprintf "val_pop (%s)" e
+    | _ -> "VNil (* shelm: wrong arity for pop *)"
+
+    end
+  | Var "shift" -> begin
+    match arg_strs with
+    | [e] -> Printf.sprintf "val_shift (%s)" e
+    | _ -> "VNil (* shelm: wrong arity for shift *)"
+
+    end
+  | Var "sort" -> begin
+    match arg_strs with
+    | [e] -> Printf.sprintf "val_sort (%s)" e
+    | _ -> "VNil (* shelm: wrong arity for sort *)"
+
+    end
+  | Var "reverse" -> begin
+    match arg_strs with
+    | [e] -> Printf.sprintf "val_reverse (%s)" e
+    | _ -> "VNil (* shelm: wrong arity for reverse *)"
+
+    end
+  | Var "keys" -> begin
+    match arg_strs with
+    | [e] -> Printf.sprintf "val_keys (%s)" e
+    | _ -> "VNil (* shelm: wrong arity for keys *)"
+
+    end
+  | Var "values" -> begin
+    match arg_strs with
+    | [e] -> Printf.sprintf "val_values (%s)" e
+    | _ -> "VNil (* shelm: wrong arity for values *)"
+
+    end
   | Var "exists" -> begin
     match args with
     | [Index (e, key)] ->
       Printf.sprintf "val_exists (%s) (%s)" (gen_expr e) (gen_expr key)
-    | _ -> "VBool false"
+    | _ -> "VBool false (* shelm: wrong arity for exists *)"
+
     end
   | Var "delete" -> begin
     match args with
     | [Index (e, key)] ->
       Printf.sprintf "val_delete (%s) (%s)" (gen_expr e) (gen_expr key)
-    | _ -> "VNil"
+    | _ -> "VNil (* shelm: wrong arity for delete *)"
+
     end
-  | Var "map" ->
-    let arr = List.nth arg_strs 0 and f = List.nth arg_strs 1 in
-    Printf.sprintf "val_map (%s) (%s)" arr f
-  | Var "filter" ->
-    let arr = List.nth arg_strs 0 and f = List.nth arg_strs 1 in
-    Printf.sprintf "val_filter (%s) (%s)" arr f
-  | Var "each" ->
-    let arr = List.nth arg_strs 0 and f = List.nth arg_strs 1 in
-    Printf.sprintf "val_each (%s) (%s)" arr f
-  | Var "join" ->
-    Printf.sprintf "val_join (%s) (%s)" (List.nth arg_strs 0) (List.nth arg_strs 1)
-  | Var "split" ->
-    Printf.sprintf "val_split (%s) (%s)" (List.nth arg_strs 0) (List.nth arg_strs 1)
+  | Var "map" -> begin
+    match arg_strs with
+    | [arr; f] -> Printf.sprintf "val_map (%s) (%s)" arr f
+    | _ -> "VNil (* shelm: wrong arity for map *)"
+
+    end
+  | Var "filter" -> begin
+    match arg_strs with
+    | [arr; f] -> Printf.sprintf "val_filter (%s) (%s)" arr f
+    | _ -> "VNil (* shelm: wrong arity for filter *)"
+
+    end
+  | Var "each" -> begin
+    match arg_strs with
+    | [arr; f] -> Printf.sprintf "val_each (%s) (%s)" arr f
+    | _ -> "VNil (* shelm: wrong arity for each *)"
+
+    end
+  | Var "join" -> begin
+    match arg_strs with
+    | [sep; arr] -> Printf.sprintf "val_join (%s) (%s)" sep arr
+    | _ -> "VNil (* shelm: wrong arity for join *)"
+
+    end
+  | Var "split" -> begin
+    match arg_strs with
+    | [pat; str] -> Printf.sprintf "val_split (%s) (%s)" pat str
+    | _ -> "VNil (* shelm: wrong arity for split *)"
+
+    end
   | Var "substr" -> begin
     match arg_strs with
     | [s; start] -> Printf.sprintf "val_substr (%s) (%s) VNil" s start
     | [s; start; len] -> Printf.sprintf "val_substr (%s) (%s) (%s)" s start len
-    | _ -> "VNil"
+    | _ -> "VNil (* shelm: wrong arity for substr *)"
+
     end
-  | Var "uppercase" -> Printf.sprintf "val_uppercase (%s)" (List.hd arg_strs)
-  | Var "lowercase" -> Printf.sprintf "val_lowercase (%s)" (List.hd arg_strs)
-  | Var "trim" -> Printf.sprintf "val_trim (%s)" (List.hd arg_strs)
-  | Var "replace" ->
-    Printf.sprintf "val_replace (%s) (%s) (%s)" (List.nth arg_strs 0) (List.nth arg_strs 1) (List.nth arg_strs 2)
-  | Var "unique" -> Printf.sprintf "val_unique (%s)" (List.hd arg_strs)
-  | Var "sqrt" -> Printf.sprintf "val_sqrt (%s)" (List.hd arg_strs)
-  | Var "sin" -> Printf.sprintf "val_sin (%s)" (List.hd arg_strs)
-  | Var "cos" -> Printf.sprintf "val_cos (%s)" (List.hd arg_strs)
-  | Var "abs" -> Printf.sprintf "val_abs (%s)" (List.hd arg_strs)
-  | Var "log" -> Printf.sprintf "val_log (%s)" (List.hd arg_strs)
-  | Var "floor" -> Printf.sprintf "val_floor (%s)" (List.hd arg_strs)
-  | Var "ceil" -> Printf.sprintf "val_ceil (%s)" (List.hd arg_strs)
+  | Var "uppercase" -> begin
+    match arg_strs with
+    | [e] -> Printf.sprintf "val_uppercase (%s)" e
+    | _ -> "VNil (* shelm: wrong arity for uppercase *)"
+
+    end
+  | Var "lowercase" -> begin
+    match arg_strs with
+    | [e] -> Printf.sprintf "val_lowercase (%s)" e
+    | _ -> "VNil (* shelm: wrong arity for lowercase *)"
+
+    end
+  | Var "trim" -> begin
+    match arg_strs with
+    | [e] -> Printf.sprintf "val_trim (%s)" e
+    | _ -> "VNil (* shelm: wrong arity for trim *)"
+
+    end
+  | Var "replace" -> begin
+    match arg_strs with
+    | [str; pat; repl] -> Printf.sprintf "val_replace (%s) (%s) (%s)" str pat repl
+    | _ -> "VNil (* shelm: wrong arity for replace *)"
+
+    end
+  | Var "unique" -> begin
+    match arg_strs with
+    | [e] -> Printf.sprintf "val_unique (%s)" e
+    | _ -> "VNil (* shelm: wrong arity for unique *)"
+
+    end
+  | Var "sqrt" -> begin
+    match arg_strs with
+    | [e] -> Printf.sprintf "val_sqrt (%s)" e
+    | _ -> "VNil (* shelm: wrong arity for sqrt *)"
+
+    end
+  | Var "sin" -> begin
+    match arg_strs with
+    | [e] -> Printf.sprintf "val_sin (%s)" e
+    | _ -> "VNil (* shelm: wrong arity for sin *)"
+
+    end
+  | Var "cos" -> begin
+    match arg_strs with
+    | [e] -> Printf.sprintf "val_cos (%s)" e
+    | _ -> "VNil (* shelm: wrong arity for cos *)"
+
+    end
+  | Var "abs" -> begin
+    match arg_strs with
+    | [e] -> Printf.sprintf "val_abs (%s)" e
+    | _ -> "VNil (* shelm: wrong arity for abs *)"
+
+    end
+  | Var "log" -> begin
+    match arg_strs with
+    | [e] -> Printf.sprintf "val_log (%s)" e
+    | _ -> "VNil (* shelm: wrong arity for log *)"
+
+    end
+  | Var "floor" -> begin
+    match arg_strs with
+    | [e] -> Printf.sprintf "val_floor (%s)" e
+    | _ -> "VNil (* shelm: wrong arity for floor *)"
+
+    end
+  | Var "ceil" -> begin
+    match arg_strs with
+    | [e] -> Printf.sprintf "val_ceil (%s)" e
+    | _ -> "VNil (* shelm: wrong arity for ceil *)"
+
+    end
   | Var "random" -> begin
     match arg_strs with
     | [] -> "val_random VNil"
@@ -169,33 +279,82 @@ and gen_call func args =
   | Var "async" -> begin
     match arg_strs with
     | [e] -> Printf.sprintf "val_async (fun () -> %s)" e
-    | _ -> "VNil"
+    | _ -> "VNil (* shelm: wrong arity for async *)"
+
     end
   | Var "await" -> begin
     match arg_strs with
     | [e] -> Printf.sprintf "val_await (%s)" e
-    | _ -> "VNil"
+    | _ -> "VNil (* shelm: wrong arity for await *)"
+
     end
-  | Var "int_of" -> Printf.sprintf "val_int_of (%s)" (List.hd arg_strs)
-  | Var "float_of" -> Printf.sprintf "val_float_of (%s)" (List.hd arg_strs)
-  | Var "string_of" -> Printf.sprintf "val_string_of (%s)" (List.hd arg_strs)
+  | Var "int_of" -> begin
+    match arg_strs with
+    | [e] -> Printf.sprintf "val_int_of (%s)" e
+    | _ -> "VNil (* shelm: wrong arity for int_of *)"
+
+    end
+  | Var "float_of" -> begin
+    match arg_strs with
+    | [e] -> Printf.sprintf "val_float_of (%s)" e
+    | _ -> "VNil (* shelm: wrong arity for float_of *)"
+
+    end
+  | Var "string_of" -> begin
+    match arg_strs with
+    | [e] -> Printf.sprintf "val_string_of (%s)" e
+    | _ -> "VNil (* shelm: wrong arity for string_of *)"
+
+    end
   | Var "open" -> begin
     match arg_strs with
     | [e] -> Printf.sprintf "val_open (%s) (VString \"<\")" e
     | [e; mode] -> Printf.sprintf "val_open (%s) (%s)" e mode
-    | _ -> "VNil"
+    | _ -> "VNil (* shelm: wrong arity for open *)"
+
     end
-  | Var "close" -> Printf.sprintf "val_close (%s)" (List.hd arg_strs)
-  | Var "readline" -> Printf.sprintf "val_readline (%s)" (List.hd arg_strs)
-  | Var "read_file" -> Printf.sprintf "val_read_file (%s)" (List.hd arg_strs)
-  | Var "writeln" ->
-    Printf.sprintf "val_writeln (%s) (%s)" (List.nth arg_strs 0) (List.nth arg_strs 1)
-  | Var "regex_match" ->
-    Printf.sprintf "val_regex_match_fn (%s) (%s)" (List.nth arg_strs 0) (List.nth arg_strs 1)
-  | Var "regex_replace" ->
-    Printf.sprintf "val_regex_replace_fn (%s) (%s) (%s)" (List.nth arg_strs 0) (List.nth arg_strs 1) (List.nth arg_strs 2)
-  | Var "regex_find_all" ->
-    Printf.sprintf "val_regex_find_all_fn (%s) (%s)" (List.nth arg_strs 0) (List.nth arg_strs 1)
+  | Var "close" -> begin
+    match arg_strs with
+    | [e] -> Printf.sprintf "val_close (%s)" e
+    | _ -> "VNil (* shelm: wrong arity for close *)"
+
+    end
+  | Var "readline" -> begin
+    match arg_strs with
+    | [e] -> Printf.sprintf "val_readline (%s)" e
+    | _ -> "VNil (* shelm: wrong arity for readline *)"
+
+    end
+  | Var "read_file" -> begin
+    match arg_strs with
+    | [e] -> Printf.sprintf "val_read_file (%s)" e
+    | _ -> "VNil (* shelm: wrong arity for read_file *)"
+
+    end
+  | Var "writeln" -> begin
+    match arg_strs with
+    | [fh; data] -> Printf.sprintf "val_writeln (%s) (%s)" fh data
+    | _ -> "VNil (* shelm: wrong arity for writeln *)"
+
+    end
+  | Var "regex_match" -> begin
+    match arg_strs with
+    | [str; pat] -> Printf.sprintf "val_regex_match_fn (%s) (%s)" str pat
+    | _ -> "VBool false (* shelm: wrong arity for regex_match *)"
+
+    end
+  | Var "regex_replace" -> begin
+    match arg_strs with
+    | [str; pat; repl] -> Printf.sprintf "val_regex_replace_fn (%s) (%s) (%s)" str pat repl
+    | _ -> "VNil (* shelm: wrong arity for regex_replace *)"
+
+    end
+  | Var "regex_find_all" -> begin
+    match arg_strs with
+    | [str; pat] -> Printf.sprintf "val_regex_find_all_fn (%s) (%s)" str pat
+    | _ -> "VNil (* shelm: wrong arity for regex_find_all *)"
+
+    end
   | Var name ->
     Printf.sprintf "val_call !%s [%s]" name (String.concat "; " arg_strs)
   | func ->

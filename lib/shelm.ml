@@ -67,7 +67,7 @@ let read_ast ?(module_name = "") (source : string) :
   (Tuple_ast.program, Errors.compile_error) result =
   let* legacy = parse_legacy ~module_name source in
   let tuple_program = Tuple_ast.of_program ~module_name legacy in
-  Ok (Normalize.normalize_program tuple_program)
+  Ok tuple_program
 
 let compile_ast (target : target) (program : Tuple_ast.program) :
   (string, Errors.compile_error) result =
@@ -75,15 +75,13 @@ let compile_ast (target : target) (program : Tuple_ast.program) :
   match target with
   | Bytecode ->
     Bytecode.generate expanded
-  | Perl
-  | Ocaml
-  | Go ->
+  | Perl | Ocaml | Go ->
     let* legacy = Tuple_ast.program_of_node expanded in
     let code = match target with
       | Perl -> Codegen_perl.generate legacy
       | Ocaml -> Codegen_ocaml.generate legacy
-      | Go -> Codegen_go.generate legacy
-      | Bytecode -> assert false
+      (* Go is the only remaining case; Bytecode is handled above *)
+      | _ -> Codegen_go.generate legacy
     in
     Ok code
 

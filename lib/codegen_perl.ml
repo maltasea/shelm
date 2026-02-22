@@ -117,29 +117,29 @@ and gen_call func args =
     | [e] when call_returns_array e ->
       Printf.sprintf "scalar(%s)" (gen_expr e)
     | [e] -> Printf.sprintf "length(%s)" (gen_expr e)
-    | _ -> "length()"
+    | _ -> "die('shelm: wrong arity for length')"
     end
   | Var "push" -> begin
     match args with
     | Var name :: rest ->
       let arg_strs = List.map gen_expr rest in
       Printf.sprintf "push(@%s, %s)" name (String.concat ", " arg_strs)
-    | _ -> "push()"
+    | _ -> "die('shelm: wrong arity for push')"
     end
   | Var "pop" -> begin
     match args with
     | [Var name] -> Printf.sprintf "pop(@%s)" name
-    | _ -> "pop()"
+    | _ -> "die('shelm: wrong arity for pop')"
     end
   | Var "shift" -> begin
     match args with
     | [Var name] -> Printf.sprintf "shift(@%s)" name
-    | _ -> "shift()"
+    | _ -> "die('shelm: wrong arity for shift')"
     end
   | Var "sort" -> begin
     match args with
     | [Var name] -> Printf.sprintf "sort(@%s)" name
-    | _ -> "sort()"
+    | _ -> "die('shelm: wrong arity for sort')"
     end
   | Var "reverse" -> begin
     match args with
@@ -149,29 +149,29 @@ and gen_call func args =
       else
         Printf.sprintf "scalar(reverse(%s))" (gen_expr (Var name))
     | [e] -> Printf.sprintf "scalar(reverse(%s))" (gen_expr e)
-    | _ -> "reverse()"
+    | _ -> "die('shelm: wrong arity for reverse')"
     end
   | Var "keys" -> begin
     match args with
     | [Var name] -> Printf.sprintf "keys(%%%s)" name
-    | _ -> "keys()"
+    | _ -> "die('shelm: wrong arity for keys')"
     end
   | Var "values" -> begin
     match args with
     | [Var name] -> Printf.sprintf "values(%%%s)" name
-    | _ -> "values()"
+    | _ -> "die('shelm: wrong arity for values')"
     end
   | Var "exists" -> begin
     match args with
     | [Index (Var name, key)] ->
       Printf.sprintf "exists($%s{%s})" name (gen_expr key)
-    | _ -> "exists()"
+    | _ -> "die('shelm: wrong arity for exists')"
     end
   | Var "delete" -> begin
     match args with
     | [Index (Var name, key)] ->
       Printf.sprintf "delete($%s{%s})" name (gen_expr key)
-    | _ -> "delete()"
+    | _ -> "die('shelm: wrong arity for delete')"
     end
   | Var "map" -> begin
     match args with
@@ -179,19 +179,19 @@ and gen_call func args =
       Printf.sprintf "map { %s->($_) } @%s" (gen_expr func) name
     | [arr; func] ->
       Printf.sprintf "map { %s->($_) } @{%s}" (gen_expr func) (gen_expr arr)
-    | _ -> "map()"
+    | _ -> "die('shelm: wrong arity for map')"
     end
   | Var "filter" -> begin
     match args with
     | [Var name; func] ->
       Printf.sprintf "grep { %s->($_) } @%s" (gen_expr func) name
-    | _ -> "grep()"
+    | _ -> "die('shelm: wrong arity for filter')"
     end
   | Var "each" -> begin
     match args with
     | [Var name; func] ->
       Printf.sprintf "do { %s->($_) for @%s }" (gen_expr func) name
-    | _ -> "each()"
+    | _ -> "die('shelm: wrong arity for each')"
     end
   | Var "join" -> begin
     match args with
@@ -199,13 +199,13 @@ and gen_call func args =
       Printf.sprintf "join(%s, @%s)" (gen_expr sep) name
     | [sep; arr] ->
       Printf.sprintf "join(%s, @{%s})" (gen_expr sep) (gen_expr arr)
-    | _ -> "join()"
+    | _ -> "die('shelm: wrong arity for join')"
     end
   | Var "split" -> begin
     match args with
     | [pat; str] ->
       Printf.sprintf "split(%s, %s)" (gen_expr pat) (gen_expr str)
-    | _ -> "split()"
+    | _ -> "die('shelm: wrong arity for split')"
     end
   | Var "substr" -> begin
     match args with
@@ -213,24 +213,24 @@ and gen_call func args =
       Printf.sprintf "substr(%s, %s)" (gen_expr str) (gen_expr start)
     | [str; start; len] ->
       Printf.sprintf "substr(%s, %s, %s)" (gen_expr str) (gen_expr start) (gen_expr len)
-    | _ -> "substr()"
+    | _ -> "die('shelm: wrong arity for substr')"
     end
   | Var "uppercase" -> begin
     match args with
     | [e] -> Printf.sprintf "uc(%s)" (gen_expr e)
-    | _ -> "uc()"
+    | _ -> "die('shelm: wrong arity for uppercase')"
     end
   | Var "lowercase" -> begin
     match args with
     | [e] -> Printf.sprintf "lc(%s)" (gen_expr e)
-    | _ -> "lc()"
+    | _ -> "die('shelm: wrong arity for lowercase')"
     end
   | Var "trim" -> begin
     match args with
     | [e] ->
       let s = gen_expr e in
       Printf.sprintf "do { my $s = %s; $s =~ s/^\\s+|\\s+$//gr }" s
-    | _ -> "trim()"
+    | _ -> "die('shelm: wrong arity for trim')"
     end
   | Var "replace" -> begin
     match args with
@@ -240,29 +240,29 @@ and gen_call func args =
     | [str; pat; repl] ->
       let ss = gen_expr str and ps = gen_expr pat and rs = gen_expr repl in
       Printf.sprintf "do { (my $s = %s) =~ s/\\Q${\\ %s}\\E/${\\ %s}/g; $s }" ss ps rs
-    | _ -> "replace()"
+    | _ -> "die('shelm: wrong arity for replace')"
     end
   | Var "unique" -> begin
     match args with
     | [Var name] ->
       Printf.sprintf "do { my %%seen; grep { !$seen{$_}++ } @%s }" name
-    | _ -> "unique()"
+    | _ -> "die('shelm: wrong arity for unique')"
     end
-  | Var "sqrt" -> begin match args with [e] -> Printf.sprintf "sqrt(%s)" (gen_expr e) | _ -> "sqrt()" end
-  | Var "sin" -> begin match args with [e] -> Printf.sprintf "sin(%s)" (gen_expr e) | _ -> "sin()" end
-  | Var "cos" -> begin match args with [e] -> Printf.sprintf "cos(%s)" (gen_expr e) | _ -> "cos()" end
-  | Var "abs" -> begin match args with [e] -> Printf.sprintf "abs(%s)" (gen_expr e) | _ -> "abs()" end
-  | Var "log" -> begin match args with [e] -> Printf.sprintf "log(%s)" (gen_expr e) | _ -> "log()" end
-  | Var "floor" -> begin match args with [e] -> Printf.sprintf "int(%s)" (gen_expr e) | _ -> "int()" end
-  | Var "ceil" -> begin match args with [e] -> Printf.sprintf "POSIX::ceil(%s)" (gen_expr e) | _ -> "ceil()" end
-  | Var "random" -> begin match args with [] -> "rand()" | [e] -> Printf.sprintf "rand(%s)" (gen_expr e) | _ -> "rand()" end
+  | Var "sqrt" -> begin match args with [e] -> Printf.sprintf "sqrt(%s)" (gen_expr e) | _ -> "die('shelm: wrong arity for sqrt')" end
+  | Var "sin" -> begin match args with [e] -> Printf.sprintf "sin(%s)" (gen_expr e) | _ -> "die('shelm: wrong arity for sin')" end
+  | Var "cos" -> begin match args with [e] -> Printf.sprintf "cos(%s)" (gen_expr e) | _ -> "die('shelm: wrong arity for cos')" end
+  | Var "abs" -> begin match args with [e] -> Printf.sprintf "abs(%s)" (gen_expr e) | _ -> "die('shelm: wrong arity for abs')" end
+  | Var "log" -> begin match args with [e] -> Printf.sprintf "log(%s)" (gen_expr e) | _ -> "die('shelm: wrong arity for log')" end
+  | Var "floor" -> begin match args with [e] -> Printf.sprintf "int(%s)" (gen_expr e) | _ -> "die('shelm: wrong arity for floor')" end
+  | Var "ceil" -> begin match args with [e] -> Printf.sprintf "POSIX::ceil(%s)" (gen_expr e) | _ -> "die('shelm: wrong arity for ceil')" end
+  | Var "random" -> begin match args with [] -> "rand()" | [e] -> Printf.sprintf "rand(%s)" (gen_expr e) | _ -> "die('shelm: wrong arity for random')" end
   | Var "async" -> begin
     match args with
     | [e] ->
       Printf.sprintf
         "do { my $__slb_future = { __thunk => sub { %s }, __done => 0, __value => undef }; $__slb_future }"
         (gen_expr e)
-    | _ -> "undef"
+    | _ -> "die('shelm: wrong arity for async')"
     end
   | Var "await" -> begin
     match args with
@@ -270,45 +270,45 @@ and gen_call func args =
       Printf.sprintf
         "do { my $__slb_f = %s; if (ref($__slb_f) eq 'HASH' && exists($__slb_f->{__thunk})) { if (!$__slb_f->{__done}) { $__slb_f->{__value} = $__slb_f->{__thunk}->(); $__slb_f->{__done} = 1; } $__slb_f->{__value} } else { $__slb_f } }"
         (gen_expr e)
-    | _ -> "undef"
+    | _ -> "die('shelm: wrong arity for await')"
     end
-  | Var "int_of" -> begin match args with [e] -> Printf.sprintf "int(%s)" (gen_expr e) | _ -> "int()" end
-  | Var "float_of" -> begin match args with [e] -> Printf.sprintf "(0.0 + %s)" (gen_expr e) | _ -> "0.0" end
-  | Var "string_of" -> begin match args with [e] -> Printf.sprintf "(\"\" . %s)" (gen_expr e) | _ -> "\"\"" end
+  | Var "int_of" -> begin match args with [e] -> Printf.sprintf "int(%s)" (gen_expr e) | _ -> "die('shelm: wrong arity for int_of')" end
+  | Var "float_of" -> begin match args with [e] -> Printf.sprintf "(0.0 + %s)" (gen_expr e) | _ -> "die('shelm: wrong arity for float_of')" end
+  | Var "string_of" -> begin match args with [e] -> Printf.sprintf "(\"\" . %s)" (gen_expr e) | _ -> "die('shelm: wrong arity for string_of')" end
   | Var "open" -> begin
     match args with
     | [e] -> Printf.sprintf "do { open(my $fh, '<', %s) or die $!; $fh }" (gen_expr e)
     | [e; mode] -> Printf.sprintf "do { open(my $fh, %s, %s) or die $!; $fh }" (gen_expr mode) (gen_expr e)
-    | _ -> "open()"
+    | _ -> "die('shelm: wrong arity for open')"
     end
-  | Var "close" -> begin match args with [e] -> Printf.sprintf "close(%s)" (gen_expr e) | _ -> "close()" end
-  | Var "readline" -> begin match args with [e] -> Printf.sprintf "scalar(<%s>)" (gen_expr e) | _ -> "readline()" end
+  | Var "close" -> begin match args with [e] -> Printf.sprintf "close(%s)" (gen_expr e) | _ -> "die('shelm: wrong arity for close')" end
+  | Var "readline" -> begin match args with [e] -> Printf.sprintf "scalar(<%s>)" (gen_expr e) | _ -> "die('shelm: wrong arity for readline')" end
   | Var "read_file" -> begin
     match args with
     | [e] -> Printf.sprintf "do { local $/; open(my $fh, '<', %s) or die $!; my $c = <$fh>; close($fh); $c }" (gen_expr e)
-    | _ -> "read_file()"
+    | _ -> "die('shelm: wrong arity for read_file')"
     end
   | Var "writeln" -> begin
     match args with
     | [fh; data] -> Printf.sprintf "print(%s %s, \"\\n\")" (gen_expr fh) (gen_expr data)
-    | _ -> "writeln()"
+    | _ -> "die('shelm: wrong arity for writeln')"
     end
   | Var "regex_match" -> begin
     match args with
     | [str; pat] -> Printf.sprintf "(%s =~ %s)" (gen_expr str) (gen_expr pat)
-    | _ -> "0"
+    | _ -> "die('shelm: wrong arity for regex_match')"
     end
   | Var "regex_replace" -> begin
     match args with
     | [str; pat; repl] ->
       Printf.sprintf "do { my $s = %s; $s =~ s/%s/%s/g; $s }" (gen_expr str) (gen_expr_raw pat) (gen_expr_raw repl)
-    | _ -> "\"\""
+    | _ -> "die('shelm: wrong arity for regex_replace')"
     end
   | Var "regex_find_all" -> begin
     match args with
     | [str; pat] ->
       Printf.sprintf "do { my @m; while (%s =~ /%s/g) { push @m, $& } @m }" (gen_expr str) (gen_expr_raw pat)
-    | _ -> "()"
+    | _ -> "die('shelm: wrong arity for regex_find_all')"
     end
   | Var name ->
     let arg_strs = List.map gen_expr args in
