@@ -58,10 +58,14 @@ opam exec -- dune runtest
 - Functions:
   - `defun add x, y do return x + y end`
   - `defun fact n do ... end`
+  - typed: `defun add(x : Int, y : Int) => Int do ... end`
 - Function values:
   - `let double = fun(x) do return x * 2 end`
+  - typed: `let double = fun(x : Int) => Int do ... end`
+- Typed bindings: `def age : Int = 88`
 - Arrays: `[1, 2, 3]`
 - Hashes: `{"a": 1, "b": 2}`
+- Keyword literals: `name:` or `:name`
 - Regex:
   - literal: `/\d+/`
   - match: `text =~ /\d+/`

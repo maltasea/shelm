@@ -21,6 +21,43 @@ let is_operator_prefix = function
   | '+' | '-' | '*' | '/' | '%' | '<' | '>' | '=' | '!' -> true
   | _ -> false
 
+let is_lc_keyword_char = function
+  | 'a' .. 'z' | '0' .. '9' | '_' | '-' | '?' -> true
+  | _ -> false
+
+let is_ident_text s =
+  let n = String.length s in
+  if n = 0 || not (is_symbol_start s.[0]) then false
+  else
+    let rec loop i =
+      if i >= n then true
+      else if is_symbol_char s.[i] then loop (i + 1)
+      else false
+    in
+    loop 1
+
+let is_lc_keyword_text s =
+  let n = String.length s in
+  if n = 0 || s.[0] < 'a' || s.[0] > 'z' then false
+  else
+    let rec loop i =
+      if i >= n then true
+      else if is_lc_keyword_char s.[i] then loop (i + 1)
+      else false
+    in
+    loop 1
+
+let is_ucfirst_type_text s =
+  let n = String.length s in
+  if n = 0 || s.[0] < 'A' || s.[0] > 'Z' then false
+  else
+    let rec loop i =
+      if i >= n then true
+      else if is_symbol_char s.[i] then loop (i + 1)
+      else false
+    in
+    loop 1
+
 let is_boundary s i =
   i < 0 || i >= String.length s || not (is_symbol_char s.[i])
 
@@ -101,42 +138,8 @@ let strip_outer_parens s =
   else
     None
 
-let normalize_regex_literals s =
-  let len = String.length s in
-  let b = Buffer.create len in
-  let rec loop i =
-    if i >= len then ()
-    else if i + 1 < len && s.[i] = '#' && s.[i + 1] = '"' then begin
-      Buffer.add_char b '/';
-      let rec str j escaped =
-        if j >= len then j
-        else
-          let c = s.[j] in
-          if escaped then begin
-            if c = '/' then Buffer.add_string b "\\/"
-            else Buffer.add_char b c;
-            str (j + 1) false
-          end else if c = '\\' then begin
-            Buffer.add_char b c;
-            str (j + 1) true
-          end else if c = '"' then begin
-            Buffer.add_char b '/';
-            j + 1
-          end else begin
-            if c = '/' then Buffer.add_string b "\\/"
-            else Buffer.add_char b c;
-            str (j + 1) false
-          end
-      in
-      let next = str (i + 2) false in
-      loop next
-    end else begin
-      Buffer.add_char b s.[i];
-      loop (i + 1)
-    end
-  in
-  loop 0;
-  Buffer.contents b
+(* ~r/regex/ is now handled directly by the lexer; no reader rewriting needed *)
+let normalize_regex_literals s = s
 
 let is_host_ident_start = function
   | 'a' .. 'z' | 'A' .. 'Z' | '_' -> true
@@ -198,6 +201,211 @@ let find_matching_paren s open_i =
   in
   if open_i < 0 || open_i >= len || s.[open_i] <> '(' then None
   else loop open_i 0 0 0 false false
+
+let find_top_level_fat_arrow s =
+  let len = String.length s in
+  let rec loop i parens braces brackets in_string escaped =
+    if i + 1 >= len then None
+    else
+      let c = s.[i] in
+      if in_string then
+        if escaped then loop (i + 1) parens braces brackets true false
+        else if c = '\\' then loop (i + 1) parens braces brackets true true
+        else if c = '"' then loop (i + 1) parens braces brackets false false
+        else loop (i + 1) parens braces brackets true false
+      else
+        match c with
+        | '"' -> loop (i + 1) parens braces brackets true false
+        | '(' -> loop (i + 1) (parens + 1) braces brackets false false
+        | ')' -> loop (i + 1) (max 0 (parens - 1)) braces brackets false false
+        | '{' -> loop (i + 1) parens (braces + 1) brackets false false
+        | '}' -> loop (i + 1) parens (max 0 (braces - 1)) brackets false false
+        | '[' -> loop (i + 1) parens braces (brackets + 1) false false
+        | ']' -> loop (i + 1) parens braces (max 0 (brackets - 1)) false false
+        | '=' when s.[i + 1] = '>' && parens = 0 && braces = 0 && brackets = 0 -> Some i
+        | _ -> loop (i + 1) parens braces brackets false false
+  in
+  loop 0 0 0 0 false false
+
+let strip_optional_return_type (s : string) : string option =
+  match find_top_level_fat_arrow s with
+  | None -> Some (trim s)
+  | Some i ->
+    let left = trim (String.sub s 0 i) in
+    let right = trim (String.sub s (i + 2) (String.length s - i - 2)) in
+    if left = "" then None
+    else if is_ucfirst_type_text right then Some left
+    else None
+
+let normalize_typed_name (s : string) : string option =
+  let t = trim s in
+  match find_top_level t ':' with
+  | None ->
+    if is_ident_text t then Some t else None
+  | Some i ->
+    let left = trim (String.sub t 0 i) in
+    let right = trim (String.sub t (i + 1) (String.length t - i - 1)) in
+    if is_ident_text left && is_ucfirst_type_text right then Some left else None
+
+let normalize_typed_params (s : string) : string list option =
+  let t = trim s in
+  if t = "" then Some []
+  else
+    let parts = split_top_level_commas t in
+    let rec loop acc = function
+      | [] -> Some (List.rev acc)
+      | p :: rest ->
+        begin
+          match normalize_typed_name p with
+          | Some name -> loop (name :: acc) rest
+          | None -> None
+        end
+    in
+    loop [] parts
+
+let normalize_defun_signature (line : string) : string option =
+  let t = trim line in
+  if not (starts_with_keyword t "defun") then None
+  else
+    let raw = trim (String.sub t 5 (String.length t - 5)) in
+    match strip_optional_return_type raw with
+    | None -> None
+    | Some rest ->
+      if rest = "" then None
+      else
+        match String.index_opt rest '(' with
+        | Some open_i ->
+          let name = trim (String.sub rest 0 open_i) in
+          begin
+            match find_matching_paren rest open_i with
+            | Some close_i when close_i = String.length rest - 1 && is_ident_text name ->
+              let inner = String.sub rest (open_i + 1) (close_i - open_i - 1) in
+              begin
+                match normalize_typed_params inner with
+                | Some ps -> Some (Printf.sprintf "defun %s(%s)" name (String.concat ", " ps))
+                | None -> None
+              end
+            | _ -> None
+          end
+        | None ->
+          begin
+            match find_top_level rest ' ' with
+            | None ->
+              if is_ident_text rest then Some ("defun " ^ rest) else None
+            | Some first_space ->
+              let name = trim (String.sub rest 0 first_space) in
+              let raw_params = trim (String.sub rest (first_space + 1) (String.length rest - first_space - 1)) in
+              if not (is_ident_text name) then None
+              else
+                match normalize_typed_params raw_params with
+                | Some [] -> Some ("defun " ^ name)
+                | Some ps -> Some (Printf.sprintf "defun %s %s" name (String.concat ", " ps))
+                | None -> None
+          end
+
+let normalize_fun_signature (line : string) : string option =
+  let t = trim line in
+  if not (starts_with_keyword t "fun") then None
+  else
+    let raw = trim (String.sub t 3 (String.length t - 3)) in
+    match strip_optional_return_type raw with
+    | None -> None
+    | Some rest ->
+      if rest = "" then Some "fun"
+      else if rest.[0] = '(' then
+        begin
+          match find_matching_paren rest 0 with
+          | Some close_i when close_i = String.length rest - 1 ->
+            let inner = String.sub rest 1 (close_i - 1) in
+            begin
+              match normalize_typed_params inner with
+              | Some ps -> Some (Printf.sprintf "fun(%s)" (String.concat ", " ps))
+              | None -> None
+            end
+          | _ -> None
+        end
+      else
+        match normalize_typed_params rest with
+        | Some [] -> Some "fun"
+        | Some ps -> Some (Printf.sprintf "fun %s" (String.concat ", " ps))
+        | None -> None
+
+let normalize_binding_left (left : string) : string =
+  let t = trim left in
+  let normalize_kw kw =
+    if starts_with_keyword t kw then
+      let rest = trim (String.sub t (String.length kw) (String.length t - String.length kw)) in
+      match find_top_level rest ':' with
+      | None -> t
+      | Some i ->
+        let name = trim (String.sub rest 0 i) in
+        let ty = trim (String.sub rest (i + 1) (String.length rest - i - 1)) in
+        if is_ident_text name && is_ucfirst_type_text ty then
+          kw ^ " " ^ name
+        else
+          t
+    else
+      t
+  in
+  if starts_with_keyword t "let" then normalize_kw "let"
+  else if starts_with_keyword t "def" then normalize_kw "def"
+  else t
+
+let find_compact_keyword_or_type_colon (s : string) : string option =
+  let len = String.length s in
+  let rec loop i in_string escaped =
+    if i >= len then None
+    else
+      let c = s.[i] in
+      if in_string then
+        if escaped then loop (i + 1) true false
+        else if c = '\\' then loop (i + 1) true true
+        else if c = '"' then loop (i + 1) false false
+        else loop (i + 1) true false
+      else if is_symbol_start c && is_boundary s (i - 1) then
+        let rec read_ident j =
+          if j < len && is_symbol_char s.[j] then read_ident (j + 1) else j
+        in
+        let ident_end = read_ident (i + 1) in
+        if ident_end + 1 < len && s.[ident_end] = ':' && s.[ident_end + 1] >= 'A' && s.[ident_end + 1] <= 'Z' then
+          let rec read_type j =
+            if j < len && is_symbol_char s.[j] then read_type (j + 1) else j
+          in
+          let ty_end = read_type (ident_end + 2) in
+          Some (String.sub s i (ty_end - i))
+        else
+          loop ident_end false false
+      else
+        loop (i + 1) false false
+  in
+  loop 0 false false
+
+let find_non_lc_postfix_keyword (s : string) : string option =
+  let len = String.length s in
+  let rec loop i in_string escaped =
+    if i >= len then None
+    else
+      let c = s.[i] in
+      if in_string then
+        if escaped then loop (i + 1) true false
+        else if c = '\\' then loop (i + 1) true true
+        else if c = '"' then loop (i + 1) false false
+        else loop (i + 1) true false
+      else if is_symbol_start c && is_boundary s (i - 1) then
+        let rec read_ident j =
+          if j < len && is_symbol_char s.[j] then read_ident (j + 1) else j
+        in
+        let ident_end = read_ident (i + 1) in
+        if ident_end < len && s.[ident_end] = ':' && is_boundary s (ident_end + 1) then
+          let name = String.sub s i (ident_end - i) in
+          if is_lc_keyword_text name then loop (ident_end + 1) false false
+          else Some (name ^ ":")
+        else
+          loop ident_end false false
+      else
+        loop (i + 1) false false
+  in
+  loop 0 false false
 
 let find_ffi_tail_end s start_i =
   let len = String.length s in
@@ -387,7 +595,12 @@ let normalize_defun_header line =
   if not (starts_with_keyword t "defun") then None
   else
     match strip_trailing_block_opener t with
-    | Some body_head -> Some (body_head ^ " {")
+    | Some body_head ->
+      begin
+        match normalize_defun_signature body_head with
+        | Some normalized -> Some (normalized ^ " {")
+        | None -> None
+      end
     | None -> None
 
 let normalize_fun_binding_header line =
@@ -400,7 +613,11 @@ let normalize_fun_binding_header line =
       match strip_trailing_block_opener right with
       | None -> None
       | Some rhs_head when starts_with_keyword rhs_head "fun" ->
-        Some (left ^ " = " ^ normalize_expr rhs_head ^ " {")
+        begin
+          match normalize_fun_signature rhs_head with
+          | Some normalized_fun -> Some (normalize_binding_left left ^ " = " ^ normalized_fun ^ " {")
+          | None -> None
+        end
       | Some _ -> None
     end
 
@@ -409,7 +626,12 @@ let normalize_fun_expr_header line =
   if not (starts_with_keyword t "fun") then None
   else
     match strip_trailing_block_opener t with
-    | Some head -> Some (normalize_expr head ^ " {")
+    | Some head ->
+      begin
+        match normalize_fun_signature head with
+        | Some normalized -> Some (normalized ^ " {")
+        | None -> None
+      end
     | None -> None
 
 let normalize_unless line =
@@ -667,7 +889,7 @@ let normalize_line line =
                           | Some i ->
                             let left = trim (String.sub t 0 i) in
                             let right = trim (String.sub t (i + 1) (String.length t - i - 1)) in
-                            left ^ " = " ^ normalize_expr right
+                            normalize_binding_left left ^ " = " ^ normalize_expr right
                           | None -> t
                         end else begin
                           match find_assignment_eq t with
@@ -706,69 +928,133 @@ let validate_source_syntax (lines : string list) : unit =
     else
       ()
   in
+  let check_typed_binding line_no t =
+    if starts_with_keyword t "let" || starts_with_keyword t "def" then
+      match find_assignment_eq t with
+      | None -> ()
+      | Some i ->
+        let left = trim (String.sub t 0 i) in
+        let kw_len =
+          if starts_with_keyword left "let" then 3
+          else if starts_with_keyword left "def" then 3
+          else 0
+        in
+        if kw_len = 0 then ()
+        else
+          let rest = trim (String.sub left kw_len (String.length left - kw_len)) in
+          if find_top_level rest ':' <> None && normalize_binding_left left = left then
+            reject line_no "Invalid typed binding; use `let/def <name> : <Type> = ...` with a Ucfirst type."
+          else
+            ()
+    else
+      ()
+  in
+  let check_typed_fun_binding line_no t =
+    match find_assignment_eq t with
+    | None -> ()
+    | Some i ->
+      let right = trim (String.sub t (i + 1) (String.length t - i - 1)) in
+      begin
+        match strip_trailing_block_opener right with
+        | Some rhs when starts_with_keyword rhs "fun" ->
+          if normalize_fun_signature rhs = None then
+            reject line_no "Invalid `fun` signature; use `fun(<name> : <Type>, ...) => <Type> do ... end`."
+        | _ -> ()
+      end
+  in
   let rec loop line_no = function
     | [] -> ()
     | line :: rest ->
       let t = trim line in
       if t = "" || (String.length t > 0 && t.[0] = '#') then
         loop (line_no + 1) rest
-      else if t = "}" then
-        reject line_no "Brace blocks are not supported; use `end`."
-      else if starts_with_keyword t "else if" then
-        reject line_no "Use `elif ... then` instead of `else if`."
-      else if starts_with_keyword t "case" then
-        reject line_no "Case blocks are not supported in source; use `| pattern -> ...` inside `match ... with`."
-      else if starts_with_keyword t "if" then begin
-        if ends_with_keyword t "do" then
-          reject line_no "`if ... do` is not supported; use `if ... then`."
-        else
-          check_header line_no t "then" "if <cond> then ... end";
-        loop (line_no + 1) rest
-      end else if starts_with_keyword t "elif" then begin
-        if ends_with_keyword t "do" then
-          reject line_no "`elif ... do` is not supported; use `elif ... then`."
-        else
-          check_header line_no t "then" "elif <cond> then ... end";
-        loop (line_no + 1) rest
-      end else if t = "else" then
-        loop (line_no + 1) rest
-      else if starts_with_keyword t "else" then begin
-        if t = "else do" then
-          reject line_no "`else do` is not supported; use `else`."
-        else if ends_with_char t ':' then
-          reject line_no "Colon blocks are not supported; use `else ... end`."
-        else if find_top_level t '{' <> None then
-          reject line_no "Brace blocks are not supported; use `else ... end`."
-        else
-          ();
-        loop (line_no + 1) rest
-      end else if starts_with_keyword t "while" then begin
-        check_header line_no t "do" "while <cond> do ... end";
-        loop (line_no + 1) rest
-      end else if starts_with_keyword t "for" then begin
-        reject line_no "`for` is not supported; use `foreach <name> in <expr> do ... end`."
-      end else if starts_with_keyword t "foreach" then begin
-        check_header line_no t "do" "foreach <name> in <expr> do ... end";
-        loop (line_no + 1) rest
-      end else if starts_with_keyword t "enum" then begin
-        check_header line_no t "do" "enum <name> do ... end";
-        loop (line_no + 1) rest
-      end else if starts_with_keyword t "fn" || is_rec_fn_header t then begin
-        reject line_no "`fn`/`rec fn` are not supported; use `defun <name> ... do ... end`."
-      end else if starts_with_keyword t "defun" then begin
-        check_header line_no t "do" "defun <name> ... do ... end";
-        loop (line_no + 1) rest
-      end else if starts_with_keyword t "fun" then begin
-        check_header line_no t "do" "fun(...) do ... end";
-        loop (line_no + 1) rest
-      end else if starts_with_keyword t "match" then begin
-        check_header line_no t "with" "match <expr> with ... end";
-        loop (line_no + 1) rest
-      end else if starts_with_keyword t "unless" then begin
-        check_header line_no t "do" "unless <cond> do ... end";
-        loop (line_no + 1) rest
-      end else
-        loop (line_no + 1) rest
+      else begin
+        begin
+          match find_compact_keyword_or_type_colon t with
+          | Some token ->
+            reject line_no
+              (Printf.sprintf "`%s` is not supported; use `<name> : <Type>` for type annotations or `:<kw>`/`<kw>:` for keywords." token)
+          | None -> ()
+        end;
+        begin
+          match find_non_lc_postfix_keyword t with
+          | Some kw ->
+            reject line_no
+              (Printf.sprintf "Postfix keyword literals must be lowercase; `%s` is invalid. Use `:<kw>` or lowercase `<kw>:`." kw)
+          | None -> ()
+        end;
+        check_typed_binding line_no t;
+        check_typed_fun_binding line_no t;
+        if t = "}" then
+          reject line_no "Brace blocks are not supported; use `end`."
+        else if starts_with_keyword t "else if" then
+          reject line_no "Use `elif ... then` instead of `else if`."
+        else if starts_with_keyword t "case" then
+          reject line_no "Case blocks are not supported in source; use `| pattern -> ...` inside `match ... with`."
+        else if starts_with_keyword t "if" then begin
+          if ends_with_keyword t "do" then
+            reject line_no "`if ... do` is not supported; use `if ... then`."
+          else
+            check_header line_no t "then" "if <cond> then ... end";
+          loop (line_no + 1) rest
+        end else if starts_with_keyword t "elif" then begin
+          if ends_with_keyword t "do" then
+            reject line_no "`elif ... do` is not supported; use `elif ... then`."
+          else
+            check_header line_no t "then" "elif <cond> then ... end";
+          loop (line_no + 1) rest
+        end else if t = "else" then
+          loop (line_no + 1) rest
+        else if starts_with_keyword t "else" then begin
+          if t = "else do" then
+            reject line_no "`else do` is not supported; use `else`."
+          else if ends_with_char t ':' then
+            reject line_no "Colon blocks are not supported; use `else ... end`."
+          else if find_top_level t '{' <> None then
+            reject line_no "Brace blocks are not supported; use `else ... end`."
+          else
+            ();
+          loop (line_no + 1) rest
+        end else if starts_with_keyword t "while" then begin
+          check_header line_no t "do" "while <cond> do ... end";
+          loop (line_no + 1) rest
+        end else if starts_with_keyword t "for" then begin
+          reject line_no "`for` is not supported; use `foreach <name> in <expr> do ... end`."
+        end else if starts_with_keyword t "foreach" then begin
+          check_header line_no t "do" "foreach <name> in <expr> do ... end";
+          loop (line_no + 1) rest
+        end else if starts_with_keyword t "enum" then begin
+          check_header line_no t "do" "enum <name> do ... end";
+          loop (line_no + 1) rest
+        end else if starts_with_keyword t "fn" || is_rec_fn_header t then begin
+          reject line_no "`fn`/`rec fn` are not supported; use `defun <name> ... do ... end`."
+        end else if starts_with_keyword t "defun" then begin
+          check_header line_no t "do" "defun <name> ... do ... end";
+          begin
+            match strip_trailing_block_opener t with
+            | Some head when normalize_defun_signature head = None ->
+              reject line_no "Invalid `defun` signature; use `defun <name>(<p> : <Type>, ...) => <Type> do ... end`."
+            | _ -> ()
+          end;
+          loop (line_no + 1) rest
+        end else if starts_with_keyword t "fun" then begin
+          check_header line_no t "do" "fun(...) do ... end";
+          begin
+            match strip_trailing_block_opener t with
+            | Some head when normalize_fun_signature head = None ->
+              reject line_no "Invalid `fun` signature; use `fun(<p> : <Type>, ...) => <Type> do ... end`."
+            | _ -> ()
+          end;
+          loop (line_no + 1) rest
+        end else if starts_with_keyword t "match" then begin
+          check_header line_no t "with" "match <expr> with ... end";
+          loop (line_no + 1) rest
+        end else if starts_with_keyword t "unless" then begin
+          check_header line_no t "do" "unless <cond> do ... end";
+          loop (line_no + 1) rest
+        end else
+          loop (line_no + 1) rest
+      end
   in
   loop 1 lines
 

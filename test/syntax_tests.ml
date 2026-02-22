@@ -431,10 +431,10 @@ let test_go_wrong_arity_has_comment () =
 let test_regex_match_compile () =
   let source = {|
 let s = "hello"
-if s =~ /ell/ then
+if s =~ ~r/ell/ then
   println("matched")
 end
-if s !~ /xyz/ then
+if s !~ ~r/xyz/ then
   println("not matched")
 end
 |} in

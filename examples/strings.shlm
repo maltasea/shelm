@@ -15,11 +15,11 @@ println("Joined: " ++ join(" - ", parts))
 
 # Regex
 let text = "The year is 2024 and the day is 21"
-if text =~ /\d+/ then
+if text =~ ~r/\d+/ then
   println("Found a number!")
 end
 
 let email = "user@example.com"
-if email =~ /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]+$/ then
+if email =~ ~r/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]+$/ then
   println("Valid email: " ++ email)
 end

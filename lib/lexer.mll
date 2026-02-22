@@ -41,6 +41,8 @@
 let digit = ['0'-'9']
 let alpha = ['a'-'z' 'A'-'Z' '_']
 let ident_char = alpha | digit | ['-' '?']
+let lc_start = ['a'-'z']
+let lc_keyword_char = lc_start | digit | ['_' '-' '?']
 let ws = [' ' '\t']
 
 rule token = parse
@@ -56,6 +58,9 @@ rule token = parse
                          set_expr_end true (REGEX_REPLACE (pat, repl, flags)) }
   | "=~"               { set_expr_end false MATCH_OP }
   | "!~"               { set_expr_end false NOT_MATCH_OP }
+  | "~r/"              { let pat = read_regex_body (Buffer.create 64) lexbuf in
+                         let flags = read_regex_flags (Buffer.create 8) lexbuf in
+                         set_expr_end true (REGEX (pat, flags)) }
   | "++"               { set_expr_end false PLUSPLUS }
   | "=="               { set_expr_end false EQEQ }
   | "!="               { set_expr_end false NEQ }
@@ -64,12 +69,7 @@ rule token = parse
   | '+'                { set_expr_end false PLUS }
   | '-'                { set_expr_end false MINUS }
   | '*'                { set_expr_end false STAR }
-  | '/'                { if !prev_was_expr_end then
-                           set_expr_end false SLASH
-                         else
-                           let pat = read_regex_body (Buffer.create 64) lexbuf in
-                           let flags = read_regex_flags (Buffer.create 8) lexbuf in
-                           set_expr_end true (REGEX (pat, flags)) }
+  | '/'                { set_expr_end false SLASH }
   | '%'                { set_expr_end false PERCENT }
   | '='                { set_expr_end false EQUALS }
   | '<'                { set_expr_end false LT }
@@ -81,11 +81,14 @@ rule token = parse
   | '{'                { set_expr_end false LBRACE }
   | '}'                { set_expr_end true RBRACE }
   | ','                { set_expr_end false COMMA }
+  | ':' lc_start lc_keyword_char* { let s = Lexing.lexeme lexbuf in
+                                     let n = String.length s in
+                                     set_expr_end true (KEYWORD (String.sub s 1 (n - 1))) }
   | ':'                { set_expr_end false COLON }
   | '_'                { set_expr_end true UNDERSCORE }
-  | alpha ident_char* ':' { let s = Lexing.lexeme lexbuf in
-                            let n = String.length s in
-                            set_expr_end true (KEYWORD (String.sub s 0 (n - 1))) }
+  | lc_start lc_keyword_char* ':' { let s = Lexing.lexeme lexbuf in
+                                     let n = String.length s in
+                                     set_expr_end true (KEYWORD (String.sub s 0 (n - 1))) }
   | alpha ident_char*  { let s = Lexing.lexeme lexbuf in
                          match Hashtbl.find_opt keywords s with
                          | Some tok -> set_expr_end (match tok with TRUE | FALSE | NIL -> true | _ -> false) tok
